@@ -10,7 +10,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-// Banco SQLite
 let db;
 (async () => {
   db = await open({
@@ -30,7 +29,6 @@ let db;
   console.log('Banco de dados conectado com sucesso');
 })();
 
-// Servir frontend
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
@@ -73,7 +71,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor rodando na porta ${PORT}`);
