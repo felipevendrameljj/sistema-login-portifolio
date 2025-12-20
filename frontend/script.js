@@ -8,9 +8,9 @@ function register() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, password })
   })
-  .then(res => res.json())
-  .then(data => document.getElementById('msg').innerText = data.message)
-  .catch(() => document.getElementById('msg').innerText = 'Erro ao conectar ao servidor');
+    .then(res => res.json())
+    .then(data => document.getElementById('msg').innerText = data.message)
+    .catch(() => document.getElementById('msg').innerText = 'Erro ao conectar ao servidor');
 }
 
 function login() {
@@ -22,7 +22,7 @@ function login() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
   })
-  .then(res => res.json())
-  .then(data => document.getElementById('loginMsg').innerText = data.message)
-  .catch(() => document.getElementById('loginMsg').innerText = 'Erro ao conectar ao servidor');
+    .then(res => res.json())
+    .then(data => document.getElementById('loginMsg').innerText = data.message)
+    .catch(() => document.getElementById('loginMsg').innerText = 'Erro ao conectar ao servidor');
 }
