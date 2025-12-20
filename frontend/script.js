@@ -1,3 +1,8 @@
+function toggleForms() {
+  document.getElementById('registerForm').classList.toggle('hidden');
+  document.getElementById('loginForm').classList.toggle('hidden');
+}
+
 function register() {
   const name = document.getElementById('name').value;
   const email = document.getElementById('email').value;
