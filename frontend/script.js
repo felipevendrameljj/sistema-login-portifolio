@@ -15,10 +15,14 @@ function register() {
   })
   .then(res => res.json())
   .then(data => {
-    document.getElementById('msg').innerText = data.message;
+    const msgEl = document.getElementById('msg');
+    msgEl.innerText = data.message;
+    msgEl.style.color = data.message.includes('sucesso') ? 'green' : '#e74c3c';
   })
   .catch(() => {
-    document.getElementById('msg').innerText = 'Erro ao conectar ao servidor';
+    const msgEl = document.getElementById('msg');
+    msgEl.innerText = 'Erro ao conectar ao servidor';
+    msgEl.style.color = '#e74c3c';
   });
 }
 
@@ -33,9 +37,13 @@ function login() {
   })
   .then(res => res.json())
   .then(data => {
-    document.getElementById('loginMsg').innerText = data.message;
+    const msgEl = document.getElementById('loginMsg');
+    msgEl.innerText = data.message;
+    msgEl.style.color = data.message.includes('sucesso') ? 'green' : '#e74c3c';
   })
   .catch(() => {
-    document.getElementById('loginMsg').innerText = 'Erro ao conectar ao servidor';
+    const msgEl = document.getElementById('loginMsg');
+    msgEl.innerText = 'Erro ao conectar ao servidor';
+    msgEl.style.color = '#e74c3c';
   });
 }
