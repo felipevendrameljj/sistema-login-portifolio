@@ -1,34 +1,221 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Tabela de Gastos</title>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="script.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Gastos</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* --- ESTILO DARK MODE --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1117; /* Fundo escuro */
+            color: #ffffff;
+            margin: 0;
+            padding: 10px; /* Reduzido para subir o conteúdo */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-top: 10px; /* Título bem no topo */
+            color: #58a6ff;
+            font-size: 2rem;
+        }
+
+        .expense-form {
+            background-color: #161b22;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #30363d;
+            background-color: #0d1117;
+            color: white;
+            outline: none;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #238636;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #2ea043;
+        }
+
+        /* --- TABELA --- */
+        table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            background-color: #161b22;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #30363d;
+        }
+
+        th {
+            background-color: #21262d;
+            color: #58a6ff;
+        }
+
+        /* --- GRÁFICO --- */
+        .chart-container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #161b22;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-<h1>Tabela de Gastos</h1>
 
-<div class="expense-form">
-  <input id="category" placeholder="Categoria">
-  <input id="description" placeholder="Descrição">
-  <input id="amount" type="number" placeholder="Valor">
-  <button onclick="addExpense()">Adicionar</button>
-</div>
+    <h1>Tabela de Gastos</h1>
 
-<table id="expensesTable">
-  <thead>
-    <tr>
-      <th>Categoria</th>
-      <th>Descrição</th>
-      <th>Valor</th>
-      <th>Data</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+    <div class="expense-form">
+        <input id="category" placeholder="Categoria (Ex: Lanche)">
+        <input id="description" placeholder="Descrição (Ex: Pizza)">
+        <input id="amount" type="number" placeholder="Valor (R$)">
+        <button id="btnAdd">Adicionar</button>
+    </div>
 
-<canvas id="expenseChart" width="400" height="400"></canvas>
+    <table id="expensesTable">
+        <thead>
+            <tr>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <div class="chart-container">
+        <canvas id="expenseChart"></canvas>
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÃO FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyNA6pXmFi6CnBNBsbBwAuM_3qNWzcZBc",
+            authDomain: "listadepresentes-chacasa.firebaseapp.com",
+            projectId: "listadepresentes-chacasa",
+            storageBucket: "listadepresentes-chacasa.firebasestorage.app",
+            messagingSenderId: "150955966027",
+            appId: "1:150955966027:web:d6150af557fc0746ffd7ce"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- LÓGICA DO GRÁFICO ---
+        let myChart;
+        function updateChart(dataMap) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            const labels = Object.keys(dataMap);
+            const values = Object.values(dataMap);
+
+            if (myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#58a6ff', '#238636', '#f85149', '#d29922', '#8b949e']
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    }
+                }
+            });
+        }
+
+        // --- CARREGAR DADOS DO FIREBASE ---
+        function loadExpenses() {
+            db.collection("gastos").orderBy("data", "desc").onSnapshot(snapshot => {
+                const tbody = document.querySelector("#expensesTable tbody");
+                tbody.innerHTML = "";
+                let categoryTotals = {};
+
+                snapshot.forEach(doc => {
+                    const gasto = doc.data();
+                    const row = `<tr>
+                        <td>${gasto.categoria}</td>
+                        <td>${gasto.descricao}</td>
+                        <td>R$ ${parseFloat(gasto.valor).toFixed(2)}</td>
+                        <td>${new Date(gasto.data?.toDate()).toLocaleDateString()}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+
+                    // Soma para o gráfico
+                    categoryTotals[gasto.categoria] = (categoryTotals[gasto.categoria] || 0) + parseFloat(gasto.valor);
+                });
+                updateChart(categoryTotals);
+            });
+        }
+
+        // --- ADICIONAR NOVO GASTO ---
+        document.getElementById('btnAdd').onclick = async () => {
+            const cat = document.getElementById('category').value;
+            const desc = document.getElementById('description').value;
+            const val = document.getElementById('amount').value;
+
+            if (cat && desc && val) {
+                await db.collection("gastos").add({
+                    categoria: cat,
+                    descricao: desc,
+                    valor: val,
+                    data: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Limpar campos
+                document.getElementById('category').value = "";
+                document.getElementById('description').value = "";
+                document.getElementById('amount').value = "";
+            } else {
+                alert("Preencha todos os campos!");
+            }
+        };
+
+        // Iniciar
+        loadExpenses();
+    </script>
 </body>
 </html>
