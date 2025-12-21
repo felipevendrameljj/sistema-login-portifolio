@@ -1,8 +1,10 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Caminho do banco
+// Caminho correto do banco de dados
 const dbPath = path.join(__dirname, 'database.db');
+
+// Conectar ao banco
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Erro ao conectar no banco:', err);
@@ -42,4 +44,5 @@ db.run(createExpensesTable, (err) => {
   else console.log('Tabela expenses pronta ✅');
 });
 
+// Exportar a conexão
 module.exports = db;

@@ -1,31 +1,37 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const db = require('./database/db');
 const bcrypt = require('bcrypt');
+const db = require('./database/db');
 
 const app = express();
+const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-// Servir dashboard.html
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'dashboard.html'));
+// Rota principal
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
 /* ================== REGISTER ================== */
 app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
-  if (!name || !email || !password) return res.status(400).json({ message: 'Preencha todos os campos' });
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'Preencha todos os campos' });
+  }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const query = `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`;
+
     db.run(query, [name, email, hashedPassword], function (err) {
-      if (err) return res.status(500).json({ message: 'Erro ao cadastrar usuário' });
-      res.json({ message: 'Usuário cadastrado com sucesso', user_id: this.lastID });
+      if (err) {
+        return res.status(500).json({ message: 'Erro ao cadastrar usuário' });
+      }
+      res.json({ message: 'Usuário cadastrado com sucesso', userId: this.lastID });
     });
   } catch (err) {
     res.status(500).json({ message: 'Erro ao criptografar senha' });
@@ -35,7 +41,9 @@ app.post('/register', async (req, res) => {
 /* ================== LOGIN ================== */
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ message: 'Preencha todos os campos' });
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Preencha todos os campos' });
+  }
 
   const query = `SELECT * FROM users WHERE email = ?`;
   db.get(query, [email], async (err, user) => {
@@ -49,36 +57,38 @@ app.post('/login', (req, res) => {
   });
 });
 
-/* ================== GASTOS ================== */
-// Criar tabela se não existir
-db.run(`CREATE TABLE IF NOT EXISTS expenses (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER,
-  description TEXT,
-  category TEXT,
-  value REAL
-)`);
+/* ================== ADD EXPENSE ================== */
+app.post('/expense', (req, res) => {
+  const { user_id, category, description, amount } = req.body;
+  if (!user_id || !category || !amount) {
+    return res.status(400).json({ message: 'Preencha todos os campos obrigatórios' });
+  }
 
-// Adicionar gasto
-app.post('/expenses', (req, res) => {
-  const { user_id, description, category, value } = req.body;
-  if (!user_id || !description || !category || !value) return res.status(400).json({ message: 'Preencha todos os campos' });
-
-  const query = `INSERT INTO expenses (user_id, description, category, value) VALUES (?, ?, ?, ?)`;
-  db.run(query, [user_id, description, category, value], function(err){
-    if(err) return res.status(500).json({ message: 'Erro ao adicionar gasto' });
-    res.json({ message: 'Gasto adicionado com sucesso', expense_id: this.lastID });
+  const query = `INSERT INTO expenses (user_id, category, description, amount) VALUES (?, ?, ?, ?)`;
+  db.run(query, [user_id, category, description, amount], function (err) {
+    if (err) return res.status(500).json({ message: 'Erro ao adicionar gasto' });
+    res.json({ message: 'Gasto registrado com sucesso', expenseId: this.lastID });
   });
 });
 
-// Listar gastos do usuário
+/* ================== GET EXPENSES ================== */
 app.get('/expenses/:user_id', (req, res) => {
-  const user_id = req.params.user_id;
-  const query = `SELECT * FROM expenses WHERE user_id = ?`;
-  db.all(query, [user_id], (err, rows) => {
-    if(err) return res.status(500).json({ message: 'Erro ao buscar gastos' });
+  const userId = req.params.user_id;
+  const query = `SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC`;
+  db.all(query, [userId], (err, rows) => {
+    if (err) return res.status(500).json({ message: 'Erro ao buscar gastos' });
     res.json(rows);
   });
 });
 
-app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
+/* ================== GET USERS (apenas teste) ================== */
+app.get('/users', (req, res) => {
+  db.all('SELECT id, name, email FROM users', [], (err, rows) => {
+    if (err) return res.status(500).json({ message: 'Erro ao buscar usuários' });
+    res.json(rows);
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT} 🚀`);
+});
