@@ -4,6 +4,7 @@ const path = require('path');
 const db = require('./database/db');
 const bcrypt = require('bcryptjs');
 
+
 const app = express();
 app.use(cors());
 app.use(express.json());
