@@ -1,39 +1,37 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Login</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Login</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <div class="logo">MySocial</div>
+<div class="container">
+  <div class="logo">MySocial</div>
 
-    <div class="form-wrapper">
+  <div class="form-wrapper">
+    <div class="form-container" id="registerForm">
+      <h2>Cadastrar</h2>
+      <input type="text" id="name" placeholder="Nome" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Senha" required>
+      <button onclick="register()">Cadastrar</button>
+      <p id="msg" class="msg"></p>
+      <p class="toggle-text">Já tem conta? <span onclick="toggleForms()">Entrar</span></p>
+    </div>
 
-      <div class="form-container" id="registerForm">
-        <h2>Cadastrar</h2>
-        <input type="text" id="name" placeholder="Nome" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Senha" required>
-        <button onclick="register()">Cadastrar</button>
-        <p id="msg" class="msg"></p>
-        <p class="toggle-text">Já tem conta? <span onclick="toggleForms()">Entrar</span></p>
-      </div>
-
-      <div class="form-container hidden" id="loginForm">
-        <h2>Login</h2>
-        <input type="email" id="loginEmail" placeholder="Email" required>
-        <input type="password" id="loginPassword" placeholder="Senha" required>
-        <button onclick="login()">Entrar</button>
-        <p id="loginMsg" class="msg"></p>
-        <p class="toggle-text">Não tem conta? <span onclick="toggleForms()">Cadastrar</span></p>
-      </div>
-
+    <div class="form-container hidden" id="loginForm">
+      <h2>Login</h2>
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Senha" required>
+      <button onclick="login()">Entrar</button>
+      <p id="loginMsg" class="msg"></p>
+      <p class="toggle-text">Não tem conta? <span onclick="toggleForms()">Cadastrar</span></p>
     </div>
   </div>
+</div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
