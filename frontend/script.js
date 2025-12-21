@@ -3,7 +3,10 @@ import { auth, db, googleProvider, facebookProvider, githubProvider } from './fi
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { app, analytics } from './firebase-config.js';
-
+import { firebaseConfig } from './firebase-config.js'; // seu arquivo de configuração
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 // Alternar login/cadastro
 export function toggleForm() {
   document.getElementById('register-box').style.display = 
