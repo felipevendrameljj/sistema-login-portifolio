@@ -38,8 +38,39 @@ function login() {
   .then(res => res.json())
   .then(data => {
     const msgEl = document.getElementById('loginMsg');
-    msgEl.innerText = data.message;
-    msgEl.style.color = data.message.includes('sucesso') ? 'green' : '#e74c3c';
+    if (data.user) {
+      localStorage.setItem('loggedUser', JSON.stringify(data.user));
+      window.location.href = 'dashboard.html';
+    } else {
+      msgEl.innerText = data.message;
+      msgEl.style.color = '#e74c3c';
+    }
+  })
+  .catch(() => {
+    const msgEl = document.getElementById('loginMsg');
+    msgEl.innerText = 'Erro ao conectar ao servidor';
+    msgEl.style.color = '#e74c3c';
+  });
+}
+function login() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const msgEl = document.getElementById('loginMsg');
+    if (data.user) {
+      localStorage.setItem('loggedUser', JSON.stringify(data.user));
+      window.location.href = 'dashboard.html';
+    } else {
+      msgEl.innerText = data.message;
+      msgEl.style.color = '#e74c3c';
+    }
   })
   .catch(() => {
     const msgEl = document.getElementById('loginMsg');
