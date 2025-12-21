@@ -2,6 +2,7 @@
 import { auth, db, googleProvider, facebookProvider, githubProvider } from './firebase-config.js';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { app, analytics } from './firebase-config.js';
 
 // Alternar login/cadastro
 export function toggleForm() {
