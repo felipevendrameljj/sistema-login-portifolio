@@ -4,26 +4,57 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Financeiro</title>
-<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+.container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+h2 { color: #1877f2; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+th { background: #1877f2; color: white; }
+input, select { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+button { padding: 10px 15px; background: #1877f2; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+button:hover { background: #145dbf; }
+</style>
 </head>
 <body>
 <div class="container">
-  <h2>Bem-vindo, <span id="userName"></span>!</h2>
-  <h3>Saldo: R$ <span id="balance">0.00</span></h3>
+<h2>Dashboard Financeiro</h2>
+<p>Olá, <span id="userName"></span>!</p>
 
-  <div class="transaction-form">
-    <input type="text" id="desc" placeholder="Descrição">
-    <input type="number" id="amount" placeholder="Valor (positivo ou negativo)">
-    <button onclick="addTransaction()">Adicionar</button>
-  </div>
+<h3>Adicionar Gasto</h3>
+<select id="category">
+  <option value="">Selecione Categoria</option>
+  <option value="Alimentação">Alimentação</option>
+  <option value="Transporte">Transporte</option>
+  <option value="Lazer">Lazer</option>
+  <option value="Moradia">Moradia</option>
+  <option value="Outros">Outros</option>
+</select>
+<input type="text" id="description" placeholder="Descrição (opcional)">
+<input type="number" id="amount" placeholder="Valor" step="0.01">
+<button onclick="addExpense()">Adicionar</button>
 
-  <div class="transactions">
-    <h3>Transações</h3>
-    <ul id="transactionList"></ul>
-  </div>
+<h3>Gastos</h3>
+<table id="expensesTable">
+  <thead>
+    <tr>
+      <th>Categoria</th>
+      <th>Descrição</th>
+      <th>Valor</th>
+      <th>Data</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-  <button onclick="logout()">Sair</button>
+<h3>Resumo de Gastos por Categoria</h3>
+<canvas id="expensesChart" width="400" height="200"></canvas>
 </div>
+
 <script src="dashboard.js"></script>
+<script>
+document.getElementById('userName').innerText = localStorage.getItem('userName') || '';
+</script>
 </body>
 </html>

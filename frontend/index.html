@@ -3,35 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Login</title>
-<link rel="stylesheet" href="style.css">
+<title>Login & Cadastro</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
+.container { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 320px; }
+input { width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; }
+button { width: 100%; padding: 10px; background: #1877f2; color: white; border: none; border-radius: 5px; cursor: pointer; }
+button:hover { background: #145dbf; }
+#msg, #loginMsg { color: red; margin-top: 5px; font-size: 0.9em; }
+h2 { text-align: center; color: #1877f2; }
+.toggle { text-align: center; margin: 10px 0; cursor: pointer; color: #1877f2; text-decoration: underline; }
+</style>
 </head>
 <body>
 <div class="container">
-  <div class="logo">MySocial</div>
+  <!-- LOGIN -->
+  <div id="loginForm">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+    <p id="loginMsg"></p>
+    <p class="toggle" onclick="showRegister()">Não tem conta? Cadastre-se</p>
+  </div>
 
-  <div class="form-wrapper">
-    <div class="form-container" id="registerForm">
-      <h2>Cadastrar</h2>
-      <input type="text" id="name" placeholder="Nome" required>
-      <input type="email" id="email" placeholder="Email" required>
-      <input type="password" id="password" placeholder="Senha" required>
-      <button onclick="register()">Cadastrar</button>
-      <p id="msg" class="msg"></p>
-      <p class="toggle-text">Já tem conta? <span onclick="toggleForms()">Entrar</span></p>
-    </div>
-
-    <div class="form-container hidden" id="loginForm">
-      <h2>Login</h2>
-      <input type="email" id="loginEmail" placeholder="Email" required>
-      <input type="password" id="loginPassword" placeholder="Senha" required>
-      <button onclick="login()">Entrar</button>
-      <p id="loginMsg" class="msg"></p>
-      <p class="toggle-text">Não tem conta? <span onclick="toggleForms()">Cadastrar</span></p>
-    </div>
+  <!-- CADASTRO -->
+  <div id="registerForm" style="display:none;">
+    <h2>Cadastro</h2>
+    <input type="text" id="name" placeholder="Nome">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Senha">
+    <button onclick="register()">Cadastrar</button>
+    <p id="msg"></p>
+    <p class="toggle" onclick="showLogin()">Já tem conta? Login</p>
   </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+// Alterna telas
+function showRegister() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'block';
+}
+function showLogin() {
+  document.getElementById('registerForm').style.display = 'none';
+  document.getElementById('loginForm').style.display = 'block';
+}
+
+// LOGIN
+function login() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ email, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.user){
+      localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('userName', data.user.name);
+      window.location.href = 'dashboard.html'; // redireciona
+    } else {
+      document.getElementById('loginMsg').innerText = data.message;
+    }
+  })
+  .catch(() => document.getElementById('loginMsg').innerText = 'Erro ao conectar ao servidor');
+}
+
+// CADASTRO
+function register() {
+  const name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  fetch('/register', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ name, email, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('msg').innerText = data.message;
+    if(data.user_id){
+      setTimeout(() => {
+        showLogin();
+      }, 1500);
+    }
+  })
+  .catch(() => document.getElementById('msg').innerText = 'Erro ao conectar ao servidor');
+}
+</script>
 </body>
 </html>
