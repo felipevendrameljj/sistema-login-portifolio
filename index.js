@@ -49,3 +49,13 @@ app.post('/login', (req, res) => {
 });
 
 app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
+/* ================== LISTAR USUÁRIOS ================== */
+app.get('/users', (req, res) => {
+  const query = `SELECT id, name, email FROM users`; // não mostramos senha
+  db.all(query, [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ message: 'Erro ao buscar usuários' });
+    }
+    res.json(rows);
+  });
+});
