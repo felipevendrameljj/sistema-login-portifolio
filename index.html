@@ -1,41 +1,136 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Login / Cadastro</title>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="script.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Cadastro</title>
+    
+    <style>
+        /* --- ESTILO FUNDO ESCURO E AJUSTES --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1117; /* Fundo escuro (padrão GitHub) */
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #161b22; /* Caixa um pouco mais clara que o fundo */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            /* Subindo o conteúdo: */
+            margin-top: -50px; 
+        }
+
+        h1 {
+            margin-top: 0; /* Remove margem do topo para subir o texto */
+            margin-bottom: 20px;
+            color: #58a6ff;
+            font-size: 24px;
+        }
+
+        .box {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input {
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            background-color: #0d1117;
+            color: white;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #58a6ff;
+        }
+
+        button {
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            background-color: #238636; /* Verde de sucesso */
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #2ea043;
+        }
+
+        span {
+            color: #58a6ff;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .social-login {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            border-top: 1px solid #30363d;
+            padding-top: 20px;
+        }
+
+        .social-login img {
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            filter: brightness(0.9);
+        }
+
+        .social-login img:hover {
+            transform: scale(1.1);
+            filter: brightness(1);
+        }
+
+        #loginMsg, #msg {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Bem-vindo!</h1>
+    <h1>Bem-vindo!</h1>
 
-  <!-- Caixa de Login -->
-  <div id="login-box" class="box">
-    <input id="loginEmail" type="email" placeholder="Email">
-    <input id="loginPassword" type="password" placeholder="Senha">
-    <button onclick="login()">Entrar</button>
-    <p id="loginMsg"></p>
-    <p>Não tem conta? <span onclick="toggleForm()">Cadastre-se</span></p>
+    <div id="login-box" class="box">
+        <input id="loginEmail" type="email" placeholder="Email">
+        <input id="loginPassword" type="password" placeholder="Senha">
+        <button id="btnLogin">Entrar</button>
+        <p id="loginMsg"></p>
+        <p>Não tem conta? <span id="toRegister">Cadastre-se</span></p>
 
-    <div class="social-login">
-      <img src="assets/logos/google.png" onclick="socialLogin('google')" alt="Google">
-      <img src="assets/logos/facebook.png" onclick="socialLogin('facebook')" alt="Facebook">
-      <img src="assets/logos/github.png" onclick="socialLogin('github')" alt="GitHub">
+        <div class="social-login">
+            <img src="assets/logos/google.png" id="btnGoogle" alt="Google">
+            <img src="assets/logos/facebook.png" id="btnFacebook" alt="Facebook">
+            <img src="assets/logos/github.png" id="btnGithub" alt="GitHub">
+        </div>
     </div>
-  </div>
 
-  <!-- Caixa de Cadastro -->
-  <div id="register-box" class="box" style="display:none;">
-    <input id="name" type="text" placeholder="Nome">
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Senha">
-    <button onclick="register()">Cadastrar</button>
-    <p id="msg"></p>
-    <p>Já tem conta? <span onclick="toggleForm()">Login</span></p>
-  </div>
+    <div id="register-box" class="box" style="display:none;">
+        <input id="name" type="text" placeholder="Nome">
+        <input id="email" type="email" placeholder="Email">
+        <input id="password" type="password" placeholder="Senha">
+        <button id="btnRegister">Cadastrar</button>
+        <p id="msg"></p>
+        <p>Já tem conta? <span id="toLogin">Login</span></p>
+    </div>
 </div>
-
-</body>
-</html>
