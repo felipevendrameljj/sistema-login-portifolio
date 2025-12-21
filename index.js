@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-// rota principal
+// Rota principal
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
@@ -28,9 +28,7 @@ app.post('/register', async (req, res) => {
 
     const query = `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`;
     db.run(query, [name, email, hashedPassword], function (err) {
-      if (err) {
-        return res.status(500).json({ message: 'Erro ao cadastrar usuário' });
-      }
+      if (err) return res.status(500).json({ message: 'Erro ao cadastrar usuário' });
       res.json({ message: 'Usuário cadastrado com sucesso' });
     });
   } catch (err) {
@@ -67,6 +65,9 @@ app.get('/users', (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+/* ================== CONFIG PARA ACESSO EXTERNO ================== */
+const PORT = 3000;
+const HOST = '0.0.0.0'; // permite acesso de outros dispositivos na rede
+app.listen(PORT, HOST, () => {
+  console.log(`Servidor rodando em http://${HOST}:${PORT}`);
 });
