@@ -3,22 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tabela de Gastos</title>
+  <title>Tabela de Gastos - Dashboard</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="firebase-config.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Tabela de Gastos</h1>
+  <div class="container-dashboard">
+    <header>
+      <h1>Tabela de Gastos</h1>
+      <div class="user-info" id="userInfo"></div>
+    </header>
 
-    <div class="expense-form">
-      <input type="text" id="category" placeholder="Categoria">
-      <input type="text" id="description" placeholder="Descrição">
-      <input type="number" id="amount" placeholder="Valor">
-      <button onclick="addExpense()">Adicionar Gasto</button>
+    <!-- Área de login social -->
+    <div class="social-login">
+      <button id="googleBtn"><img src="google-logo.png" alt="Google"> Entrar com Google</button>
+      <button id="facebookBtn"><img src="facebook-logo.png" alt="Facebook"> Entrar com Facebook</button>
+      <button id="githubBtn"><img src="github-logo.png" alt="GitHub"> Entrar com GitHub</button>
     </div>
 
-    <div class="table-container">
+    <!-- Tabela de gastos -->
+    <section class="expenses-section">
+      <h2>Seus Gastos</h2>
       <table id="expensesTable">
         <thead>
           <tr>
@@ -30,14 +35,90 @@
         </thead>
         <tbody></tbody>
       </table>
-    </div>
+    </section>
 
-    <div class="chart-container">
-      <canvas id="expenseChart"></canvas>
-    </div>
-
+    <!-- Gráfico de percentual -->
+    <section class="chart-section">
+      <h2>Distribuição de Gastos</h2>
+      <canvas id="expensesChart" width="400" height="400"></canvas>
+    </section>
   </div>
 
-  <script src="script.js"></script>
+<script type="module">
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, FacebookAuthProvider, GithubAuthProvider } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import Chart from "https://cdn.jsdelivr.net/npm/chart.js";
+
+// Mostrar informações do usuário
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    document.getElementById('userInfo').innerText = `Olá, ${user.displayName || user.email}`;
+    loadExpenses(user.uid);
+  } else {
+    document.getElementById('userInfo').innerText = 'Não logado';
+  }
+});
+
+// Login social
+const googleProvider = new GoogleAuthProvider();
+document.getElementById('googleBtn').addEventListener('click', () => {
+  signInWithPopup(auth, googleProvider);
+});
+
+const facebookProvider = new FacebookAuthProvider();
+document.getElementById('facebookBtn').addEventListener('click', () => {
+  signInWithPopup(auth, facebookProvider);
+});
+
+const githubProvider = new GithubAuthProvider();
+document.getElementById('githubBtn').addEventListener('click', () => {
+  signInWithPopup(auth, githubProvider);
+});
+
+// Carregar gastos do usuário
+async function loadExpenses(uid) {
+  const expensesRef = collection(db, "expenses");
+  const q = query(expensesRef, where("user_id", "==", uid));
+  const snapshot = await getDocs(q);
+  
+  const tbody = document.querySelector("#expensesTable tbody");
+  tbody.innerHTML = "";
+
+  let chartData = {};
+  snapshot.forEach(doc => {
+    const expense = doc.data();
+    tbody.innerHTML += `
+      <tr>
+        <td>${expense.category}</td>
+        <td>${expense.description || ""}</td>
+        <td>R$ ${expense.amount.toFixed(2)}</td>
+        <td>${expense.date || ""}</td>
+      </tr>
+    `;
+
+    chartData[expense.category] = (chartData[expense.category] || 0) + expense.amount;
+  });
+
+  // Gráfico de pizza
+  const ctx = document.getElementById('expensesChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: Object.keys(chartData),
+      datasets: [{
+        label: 'Gastos',
+        data: Object.values(chartData),
+        backgroundColor: [
+          '#3b5998', '#db4437', '#f4b400', '#0f9d58', '#ff6f61'
+        ]
+      }]
+    },
+    options: {
+      responsive: true
+    }
+  });
+}
+</script>
 </body>
 </html>
