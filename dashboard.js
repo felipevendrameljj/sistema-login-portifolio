@@ -1,66 +1,65 @@
-const userId = localStorage.getItem('userId');
+const userName = localStorage.getItem('userName');
+document.getElementById('userName').innerText = userName || "Usuário";
 
-function fetchExpenses() {
-  fetch(`/expenses/${userId}`)
-    .then(res => res.json())
-    .then(data => {
-      const tbody = document.querySelector('#expensesTable tbody');
-      tbody.innerHTML = '';
-      if(data.length === 0){
-        tbody.innerHTML = '<tr><td colspan="4">Nenhum gasto registrado</td></tr>';
-        return;
-      }
-      data.forEach(e => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${e.category}</td><td>${e.description || ''}</td><td>R$ ${e.amount.toFixed(2)}</td><td>${e.date}</td>`;
-        tbody.appendChild(tr);
-      });
-    });
-}
+// Lista de gastos
+let expenses = [];
 
+// Função para adicionar gasto
 function addExpense() {
+  const desc = document.getElementById('desc').value;
+  const value = parseFloat(document.getElementById('value').value);
   const category = document.getElementById('category').value;
-  const description = document.getElementById('description').value;
-  const amount = parseFloat(document.getElementById('amount').value);
 
-  if(!category || !amount){
-    alert('Preencha categoria e valor');
+  if(!desc || !value || isNaN(value)) {
+    alert('Preencha todos os campos corretamente!');
     return;
   }
 
-  fetch('/expenses', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ user_id: userId, category, description, amount })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message);
-    fetchExpenses();
-    fetchSummary();
+  const expense = { desc, value, category };
+  expenses.push(expense);
+
+  document.getElementById('desc').value = '';
+  document.getElementById('value').value = '';
+
+  updateTable();
+  updateChart();
+}
+
+// Atualiza tabela
+function updateTable() {
+  const tbody = document.getElementById('expenseTable');
+  tbody.innerHTML = '';
+  expenses.forEach(exp => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${exp.desc}</td><td>${exp.category}</td><td>R$ ${exp.value.toFixed(2)}</td>`;
+    tbody.appendChild(tr);
   });
 }
 
-function fetchSummary() {
-  fetch(`/expenses-summary/${userId}`)
-    .then(res => res.json())
-    .then(data => {
-      const ctx = document.getElementById('expensesChart').getContext('2d');
-      const chartData = {
-        labels: data.map(d => d.category),
-        datasets: [{
-          label: 'Gastos por Categoria',
-          data: data.map(d => d.total),
-          backgroundColor: ['#1877f2','#42b72a','#f02849','#f7b928','#8e44ad']
-        }]
-      };
-      new Chart(ctx, {
-        type: 'pie',
-        data: chartData
-      });
-    });
+// Atualiza gráfico
+function updateChart() {
+  const ctx = document.getElementById('expenseChart').getContext('2d');
+
+  const categories = {};
+  expenses.forEach(exp => {
+    categories[exp.category] = (categories[exp.category] || 0) + exp.value;
+  });
+
+  const data = {
+    labels: Object.keys(categories),
+    datasets: [{
+      label: 'Gastos',
+      data: Object.values(categories),
+      backgroundColor: ['#1877f2','#f28b82','#fbbc04','#34a853'],
+    }]
+  };
+
+  if(window.myChart) window.myChart.destroy();
+  window.myChart = new Chart(ctx, {
+    type: 'pie',
+    data,
+  });
 }
 
-// Inicializa
-fetchExpenses();
-fetchSummary();
+// Inicializa gráficos vazios
+updateChart();

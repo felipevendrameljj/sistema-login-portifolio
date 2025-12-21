@@ -4,57 +4,64 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Financeiro</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
-.container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-h2 { color: #1877f2; }
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-th { background: #1877f2; color: white; }
-input, select { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-button { padding: 10px 15px; background: #1877f2; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+header { text-align: center; margin-bottom: 20px; }
+h1 { color: #1877f2; }
+.container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+.card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+input, select { padding: 5px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+button { padding: 8px; background: #1877f2; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
 button:hover { background: #145dbf; }
+canvas { margin-top: 20px; }
 </style>
 </head>
 <body>
+<header>
+  <h1>Bem-vindo, <span id="userName"></span></h1>
+</header>
+
 <div class="container">
-<h2>Dashboard Financeiro</h2>
-<p>Olá, <span id="userName"></span>!</p>
+  <!-- Card de Adicionar Gastos -->
+  <div class="card" style="flex:1 1 300px;">
+    <h2>Adicionar Gasto</h2>
+    <input type="text" id="desc" placeholder="Descrição">
+    <input type="number" id="value" placeholder="Valor">
+    <select id="category">
+      <option value="Alimentação">Alimentação</option>
+      <option value="Transporte">Transporte</option>
+      <option value="Lazer">Lazer</option>
+      <option value="Outros">Outros</option>
+    </select>
+    <button onclick="addExpense()">Adicionar</button>
+  </div>
 
-<h3>Adicionar Gasto</h3>
-<select id="category">
-  <option value="">Selecione Categoria</option>
-  <option value="Alimentação">Alimentação</option>
-  <option value="Transporte">Transporte</option>
-  <option value="Lazer">Lazer</option>
-  <option value="Moradia">Moradia</option>
-  <option value="Outros">Outros</option>
-</select>
-<input type="text" id="description" placeholder="Descrição (opcional)">
-<input type="number" id="amount" placeholder="Valor" step="0.01">
-<button onclick="addExpense()">Adicionar</button>
+  <!-- Card de Gastos -->
+  <div class="card" style="flex:2 1 500px;">
+    <h2>Gastos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Descrição</th>
+          <th>Categoria</th>
+          <th>Valor</th>
+        </tr>
+      </thead>
+      <tbody id="expenseTable">
+      </tbody>
+    </table>
+  </div>
 
-<h3>Gastos</h3>
-<table id="expensesTable">
-  <thead>
-    <tr>
-      <th>Categoria</th>
-      <th>Descrição</th>
-      <th>Valor</th>
-      <th>Data</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<h3>Resumo de Gastos por Categoria</h3>
-<canvas id="expensesChart" width="400" height="200"></canvas>
+  <!-- Card de Gráfico -->
+  <div class="card" style="flex:1 1 300px;">
+    <h2>Resumo por Categoria</h2>
+    <canvas id="expenseChart" width="300" height="300"></canvas>
+  </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="dashboard.js"></script>
-<script>
-document.getElementById('userName').innerText = localStorage.getItem('userName') || '';
-</script>
 </body>
 </html>
