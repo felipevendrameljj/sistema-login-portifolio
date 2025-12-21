@@ -1,67 +1,43 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Financeiro</title>
-<style>
-body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
-header { text-align: center; margin-bottom: 20px; }
-h1 { color: #1877f2; }
-.container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-.card { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-table { border-collapse: collapse; width: 100%; }
-th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-input, select { padding: 5px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-button { padding: 8px; background: #1877f2; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
-button:hover { background: #145dbf; }
-canvas { margin-top: 20px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabela de Gastos</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<header>
-  <h1>Bem-vindo, <span id="userName"></span></h1>
-</header>
+  <div class="container">
+    <h1>Tabela de Gastos</h1>
 
-<div class="container">
-  <!-- Card de Adicionar Gastos -->
-  <div class="card" style="flex:1 1 300px;">
-    <h2>Adicionar Gasto</h2>
-    <input type="text" id="desc" placeholder="Descrição">
-    <input type="number" id="value" placeholder="Valor">
-    <select id="category">
-      <option value="Alimentação">Alimentação</option>
-      <option value="Transporte">Transporte</option>
-      <option value="Lazer">Lazer</option>
-      <option value="Outros">Outros</option>
-    </select>
-    <button onclick="addExpense()">Adicionar</button>
+    <div class="expense-form">
+      <input type="text" id="category" placeholder="Categoria">
+      <input type="text" id="description" placeholder="Descrição">
+      <input type="number" id="amount" placeholder="Valor">
+      <button onclick="addExpense()">Adicionar Gasto</button>
+    </div>
+
+    <div class="table-container">
+      <table id="expensesTable">
+        <thead>
+          <tr>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="expenseChart"></canvas>
+    </div>
+
   </div>
 
-  <!-- Card de Gastos -->
-  <div class="card" style="flex:2 1 500px;">
-    <h2>Gastos</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Descrição</th>
-          <th>Categoria</th>
-          <th>Valor</th>
-        </tr>
-      </thead>
-      <tbody id="expenseTable">
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Card de Gráfico -->
-  <div class="card" style="flex:1 1 300px;">
-    <h2>Resumo por Categoria</h2>
-    <canvas id="expenseChart" width="300" height="300"></canvas>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="dashboard.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
