@@ -1,101 +1,41 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Finanças - Login / Cadastro</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background-color: #f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; }
-    .container { background:#fff; padding:2rem; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.1); width:350px; }
-    h2 { text-align:center; margin-bottom:1rem; }
-    #toggleForm { text-align:center; cursor:pointer; color:#1877f2; }
-  </style>
+<meta charset="UTF-8">
+<title>Login / Cadastro</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="script.js"></script>
 </head>
 <body>
 
 <div class="container">
-  <h2>Finanças</h2>
+  <h1>Bem-vindo!</h1>
 
-  <!-- Cadastro -->
-  <div id="registerForm">
-    <input type="text" id="name" class="form-control mb-2" placeholder="Nome">
-    <input type="email" id="email" class="form-control mb-2" placeholder="Email">
-    <input type="password" id="password" class="form-control mb-2" placeholder="Senha">
-    <button onclick="register()" class="btn btn-primary w-100">Cadastrar</button>
-    <p id="msg" class="text-danger mt-2"></p>
-    <p id="toggleForm">Já tem conta? Faça login</p>
+  <!-- Caixa de Login -->
+  <div id="login-box" class="box">
+    <input id="loginEmail" type="email" placeholder="Email">
+    <input id="loginPassword" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+    <p id="loginMsg"></p>
+    <p>Não tem conta? <span onclick="toggleForm()">Cadastre-se</span></p>
+
+    <div class="social-login">
+      <img src="assets/logos/google.png" onclick="socialLogin('google')" alt="Google">
+      <img src="assets/logos/facebook.png" onclick="socialLogin('facebook')" alt="Facebook">
+      <img src="assets/logos/github.png" onclick="socialLogin('github')" alt="GitHub">
+    </div>
   </div>
 
-  <!-- Login -->
-  <div id="loginForm" style="display:none;">
-    <input type="email" id="loginEmail" class="form-control mb-2" placeholder="Email">
-    <input type="password" id="loginPassword" class="form-control mb-2" placeholder="Senha">
-    <button onclick="login()" class="btn btn-primary w-100">Entrar</button>
-    <p id="loginMsg" class="text-danger mt-2"></p>
-    <p id="toggleFormLogin">Não tem conta? Cadastre-se</p>
+  <!-- Caixa de Cadastro -->
+  <div id="register-box" class="box" style="display:none;">
+    <input id="name" type="text" placeholder="Nome">
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Senha">
+    <button onclick="register()">Cadastrar</button>
+    <p id="msg"></p>
+    <p>Já tem conta? <span onclick="toggleForm()">Login</span></p>
   </div>
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_PROJETO.firebaseapp.com",
-    projectId: "SEU_PROJETO",
-    storageBucket: "SEU_PROJETO.appspot.com",
-    messagingSenderId: "SEU_ID",
-    appId: "SEU_APP_ID"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth();
-  const db = getFirestore();
-
-  // Toggle forms
-  document.getElementById('toggleForm').onclick = () => {
-    document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('loginForm').style.display = 'block';
-  };
-  document.getElementById('toggleFormLogin').onclick = () => {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'block';
-  };
-
-  // Cadastro
-  window.register = () => {
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(userCredential => {
-        const user = userCredential.user;
-        addDoc(collection(db, "users"), { uid: user.uid, name, email })
-          .then(() => {
-            alert('Usuário cadastrado com sucesso!');
-            window.location.reload();
-          });
-      })
-      .catch(err => document.getElementById('msg').innerText = err.message);
-  };
-
-  // Login
-  window.login = () => {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
-    signInWithEmailAndPassword(auth, email, password)
-      .then(userCredential => {
-        const user = userCredential.user;
-        localStorage.setItem('uid', user.uid);
-        window.location.href = 'dashboard.html';
-      })
-      .catch(err => document.getElementById('loginMsg').innerText = err.message);
-  };
-</script>
 </body>
 </html>
