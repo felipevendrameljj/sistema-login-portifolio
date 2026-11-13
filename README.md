@@ -2,7 +2,7 @@
 
 Aplicação estática que usa Firebase Authentication para login e Cloud Firestore
 para armazenar os perfis e os gastos de cada usuário. O projeto Firebase já
-referenciado pelo app é `gastos-a2c8e`. O Firebase oferece o plano Spark sem
+referenciado pelo app é `sistemadelogin-01`. O Firebase oferece o plano Spark sem
 custo com cotas limitadas; confirme no Console qual plano está ativo nesse
 projeto e consulte as cotas vigentes antes de usar.
 
@@ -18,15 +18,15 @@ projeto e consulte as cotas vigentes antes de usar.
 ## Ativação do Firebase (uma vez por projeto)
 
 1. Abra [Firebase Console](https://console.firebase.google.com/) e selecione o
-   projeto `gastos-a2c8e`. Se não tiver acesso a ele, peça ao proprietário para
+   projeto `sistemadelogin-01`. Se não tiver acesso a ele, peça ao proprietário para
    adicionar sua conta; criar outro projeto exige atualizar também a
    configuração em `FirebaseConfig/Index.js`.
-2. Em **Firestore Database**, crie o banco de dados. Escolha uma região próxima
-   dos usuários (por exemplo, `southamerica-east1`) e o modo de produção. A
-   região do Firestore não pode ser alterada depois da criação.
-3. Em **Authentication > Sign-in method**, habilite **Email/Password**.
-   Habilite Google, GitHub ou Facebook somente se for configurar as respectivas
-   credenciais/provedores no Console.
+2. O projeto já possui o banco `(default)` do Firestore, na região `nam5`.
+   Não crie outro banco nem tente alterar sua região; essa configuração é
+   permanente.
+3. Em **Authentication > Método de login**, habilite **E-mail/senha**. Esse
+   provedor ainda não está habilitado no projeto. Habilite Google, GitHub ou
+   Facebook somente se configurar as respectivas credenciais/provedores no Console.
 4. Em **Authentication > Settings > Authorized domains**, confirme que
    `localhost` está autorizado para desenvolvimento local.
 5. Publique as regras do banco e o site. Isso requer uma conta com permissão
@@ -39,9 +39,9 @@ projeto e consulte as cotas vigentes antes de usar.
    ```
 
    Execute os comandos na pasta raiz do projeto. O `.firebaserc` seleciona
-   `gastos-a2c8e` automaticamente. A publicação das regras não apaga os dados.
+   `sistemadelogin-01` automaticamente. A publicação das regras não apaga os dados.
    Após a publicação, o Firebase Hosting informa os endereços públicos
-   `https://gastos-a2c8e.web.app` e `https://gastos-a2c8e.firebaseapp.com`.
+   `https://sistemadelogin-01.web.app` e `https://sistemadelogin-01.firebaseapp.com`.
 
 ## Executar localmente
 
