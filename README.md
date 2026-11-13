@@ -43,20 +43,21 @@ projeto e consulte as cotas vigentes antes de usar.
    Após a publicação, o Firebase Hosting informa os endereços públicos
    `https://sistemadelogin-01.web.app` e `https://sistemadelogin-01.firebaseapp.com`.
 
-## Executar localmente
+## Executar pelo VS Code
 
 Os módulos JavaScript usam imports ES Modules e precisam ser servidos por HTTP;
 não abra o HTML diretamente como `file://`.
 
-1. Instale o Node.js LTS, que inclui `npm`.
-2. Na pasta raiz, execute:
+1. Abra a pasta raiz do projeto no VS Code.
+2. Pressione **F5** e escolha **Run Controle de Gastos**. A tarefa inicia um
+   servidor local com PowerShell e abre `http://localhost:8080/` no Chrome.
+3. Para iniciar o servidor manualmente, execute na raiz do projeto:
 
    ```powershell
-   npx http-server . -p 8080
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\.vscode\serve.ps1
    ```
 
-3. Abra `http://localhost:8080/` no navegador. O endereço redireciona para a
-   tela de login pública em `Login/Index.html`.
+   Em seguida, acesse `http://localhost:8080/`.
 
 Depois de ativar o Firestore e publicar as regras, crie uma conta para verificar
 o fluxo completo. As cotas gratuitas do Spark são limitadas e podem mudar;

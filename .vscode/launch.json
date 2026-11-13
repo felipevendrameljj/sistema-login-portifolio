@@ -5,11 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "chrome",
+            "type": "pwa-chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
-            "url": "http://localhost:8080",
-            "webRoot": "${workspaceFolder}"
+            "name": "Run Controle de Gastos",
+            "url": "http://localhost:8080/",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Serve Controle de Gastos"
         }
     ]
 }
