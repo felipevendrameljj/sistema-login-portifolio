@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Cadastro</title>
+  <link rel="stylesheet" href="../Style/Style.css">
+</head>
+<body class="center">
+  <main class="card">
+    <h1>Bem-vindo!</h1>
+
+    <section id="login-box" class="box">
+      <input id="loginEmail" type="email" placeholder="Email" autocomplete="email">
+      <input id="loginPassword" type="password" placeholder="Senha" autocomplete="current-password">
+      <button id="btnLogin">Entrar</button>
+      <button id="btnReset" class="link">Esqueci minha senha</button>
+      <p id="loginMsg" class="msg"></p>
+      <p>Não tem conta? <button id="toRegister" class="link">Cadastre-se</button></p>
+      <div class="social">
+        <button id="btnGoogle" class="outline">Google</button>
+        <button id="btnGithub" class="outline">GitHub</button>
+        <button id="btnFacebook" class="outline">Facebook</button>
+      </div>
+    </section>
+
+    <section id="register-box" class="box" hidden>
+      <input id="name" type="text" placeholder="Nome" autocomplete="name">
+      <input id="email" type="email" placeholder="Email" autocomplete="email">
+      <input id="password" type="password" placeholder="Senha (mín. 6 caracteres)" autocomplete="new-password">
+      <button id="btnRegister">Cadastrar</button>
+      <p id="msg" class="msg"></p>
+      <p>Já tem conta? <button id="toLogin" class="link">Entrar</button></p>
+    </section>
+  </main>
+
+  <script type="module" src="Cadastro/Auth.js"></script>
+</body>
+</html>

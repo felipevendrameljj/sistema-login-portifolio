@@ -12,7 +12,7 @@ let currentUser = null;
 let chart = null;
 
 onAuthStateChanged(auth, (user) => {
-  if (!user) return location.replace("../.vscode/HTML/Index.html");
+  if (!user) return location.replace("../Login/Index.html");
   currentUser = user;
   $("userName").textContent = user.displayName || user.email;
 

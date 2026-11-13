@@ -27,7 +27,7 @@ const show = (id, text, ok = false) => {
   el.className = "msg" + (ok ? " ok" : "");
 };
 const explain = (e) => ERRORS[e.code] || "Erro inesperado. Tente novamente.";
-const goDashboard = () => location.replace("../../Dashboard/Dash.html");
+const goDashboard = () => location.replace("../Dashboard/Dash.html");
 
 onAuthStateChanged(auth, (user) => { if (user && !busy) goDashboard(); });
 

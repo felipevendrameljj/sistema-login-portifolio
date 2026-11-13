@@ -29,16 +29,19 @@ projeto e consulte as cotas vigentes antes de usar.
    credenciais/provedores no Console.
 4. Em **Authentication > Settings > Authorized domains**, confirme que
    `localhost` está autorizado para desenvolvimento local.
-5. Publique as regras abaixo. Isso requer uma conta com permissão no projeto:
+5. Publique as regras do banco e o site. Isso requer uma conta com permissão
+   no projeto:
 
    ```powershell
    npm install --global firebase-tools
    firebase login
-   firebase deploy --only firestore:rules
+   firebase deploy --only firestore:rules,hosting
    ```
 
    Execute os comandos na pasta raiz do projeto. O `.firebaserc` seleciona
    `gastos-a2c8e` automaticamente. A publicação das regras não apaga os dados.
+   Após a publicação, o Firebase Hosting informa os endereços públicos
+   `https://gastos-a2c8e.web.app` e `https://gastos-a2c8e.firebaseapp.com`.
 
 ## Executar localmente
 
@@ -53,7 +56,7 @@ não abra o HTML diretamente como `file://`.
    ```
 
 3. Abra `http://localhost:8080/` no navegador. O endereço redireciona para a
-   tela de login em `.vscode/HTML/Index.html`.
+   tela de login pública em `Login/Index.html`.
 
 Depois de ativar o Firestore e publicar as regras, crie uma conta para verificar
 o fluxo completo. As cotas gratuitas do Spark são limitadas e podem mudar;
