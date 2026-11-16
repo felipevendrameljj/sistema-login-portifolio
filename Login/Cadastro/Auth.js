@@ -143,7 +143,9 @@ $("registerForm").addEventListener("submit", async (event) => {
     show("loginMsg", "Conta criada! Enviamos um link de verificação para seu e-mail. Confirme-o antes de entrar.", "success");
     $("loginEmail").value = email;
   } catch (error) {
-    console.error("Falha durante o cadastro:", error);
+    if (error.code !== "auth/email-already-in-use") {
+      console.error("Falha durante o cadastro:", error);
+    }
     if (accountCreated) {
       try {
         await signOut(auth);
