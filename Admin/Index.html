@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Administração | VD-Finanças</title>
+  <link rel="stylesheet" href="../Style/Style.css">
+</head>
+<body class="dashboard admin-page">
+  <header class="topbar">
+    <a class="brand" href="../index.html" aria-label="VD-Finanças, início">
+      <span class="brand-mark" aria-hidden="true">VD</span>
+      <span>VD-Finanças<span class="brand-period">.</span></span>
+    </a>
+    <div class="topbar-account">
+      <div class="account-copy">
+        <span class="account-label">Sessão administrativa</span>
+        <strong id="adminEmail"></strong>
+      </div>
+      <button id="btnAdminLogout" class="button button-quiet" type="button">Sair</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">ACESSO RESTRITO</p>
+        <h1>Administração</h1>
+        <p class="muted">Dados financeiros confidenciais. Use somente em dispositivo confiável.</p>
+      </div>
+    </section>
+
+    <p id="adminStatus" class="status-message admin-status" role="status" aria-live="polite">Verificando autorização...</p>
+
+    <section id="mfaEnrollmentPanel" class="panel mfa-enrollment-panel" hidden>
+      <p class="eyebrow">PROTEÇÃO OBRIGATÓRIA</p>
+      <h2>Configure seu aplicativo autenticador</h2>
+      <p>Antes de acessar qualquer dado, proteja a conta administrativa com um código TOTP de seis dígitos. Use um aplicativo autenticador e guarde a chave em local seguro.</p>
+      <form id="mfaReauthForm" class="admin-reauth-form">
+        <label for="mfaReauthPassword">Confirme novamente a senha da conta</label>
+        <input id="mfaReauthPassword" type="password" autocomplete="current-password" required>
+        <button id="btnStartMfaEnrollment" class="button button-primary" type="submit">Gerar chave TOTP</button>
+      </form>
+      <div id="mfaSetup" class="mfa-setup" hidden>
+        <p>Adicione esta chave manualmente no aplicativo autenticador, usando o e-mail da conta e o emissor <strong>VD-Finanças</strong>. A chave aparece apenas nesta sessão. Não compartilhe nem faça uma captura de tela.</p>
+        <code id="mfaSecret" class="mfa-secret"></code>
+        <form id="mfaEnrollForm">
+          <label for="mfaEnrollmentCode">Digite o código atual do aplicativo</label>
+          <input id="mfaEnrollmentCode" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" placeholder="000000" required>
+          <button id="btnConfirmMfaEnrollment" class="button button-primary" type="submit">Ativar verificação em duas etapas</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="adminPanel" class="admin-layout" hidden>
+      <section class="panel admin-entry-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">GERENCIAMENTO</p>
+            <h2 id="adminFormTitle">Novo lançamento</h2>
+          </div>
+        </div>
+        <form id="adminEntryForm" class="entry-form">
+          <label for="ownerSearch">Localizar conta por nome ou e-mail</label>
+          <input id="ownerSearch" type="search" placeholder="Digite para filtrar contas carregadas" autocomplete="off">
+          <label for="entryOwner">Titular do lançamento</label>
+          <select id="entryOwner" required>
+            <option value="">Carregue e selecione uma conta</option>
+          </select>
+          <button id="btnLoadMoreUsers" class="button button-quiet" type="button">Carregar contas</button>
+          <p id="ownerLoadStatus" class="muted admin-owner-status" role="status" aria-live="polite"></p>
+
+          <label for="entryKind">Tipo de lançamento</label>
+          <select id="entryKind" required>
+            <option value="income">Entrada</option>
+            <option value="expense">Saída</option>
+            <option value="charge">Cobrança</option>
+          </select>
+          <label for="entryDescription">Descrição</label>
+          <input id="entryDescription" type="text" maxlength="140" required>
+          <label for="entryCategory">Categoria</label>
+          <select id="entryCategory" required>
+            <option value="Vendas">Vendas</option>
+            <option value="Serviços">Serviços</option>
+            <option value="Salário">Salário</option>
+            <option value="Alimentação">Alimentação</option>
+            <option value="Moradia">Moradia</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Contas">Contas</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Educação">Educação</option>
+            <option value="Lazer">Lazer</option>
+            <option value="Outros">Outros</option>
+          </select>
+          <label for="entryAmount">Valor (R$)</label>
+          <input id="entryAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required>
+          <label for="entryDate">Data do lançamento</label>
+          <input id="entryDate" type="date" required>
+
+          <div id="counterpartyFields" class="conditional-fields">
+            <label id="counterpartyNameLabel" for="counterpartyName">Origem (opcional)</label>
+            <input id="counterpartyName" type="text" maxlength="100">
+            <label id="counterpartyEmailLabel" for="counterpartyEmail">E-mail (opcional)</label>
+            <input id="counterpartyEmail" type="email" maxlength="254">
+          </div>
+
+          <div id="chargeFields" class="conditional-fields" hidden>
+            <label for="dueDate">Data de vencimento</label>
+            <input id="dueDate" type="date">
+            <label for="chargeStatus">Situação da cobrança</label>
+            <select id="chargeStatus">
+              <option value="pending">Em aberto</option>
+              <option value="paid">Paga</option>
+            </select>
+            <div id="paymentDateField" hidden>
+              <label for="paymentDate">Data do pagamento</label>
+              <input id="paymentDate" type="date">
+            </div>
+          </div>
+
+          <label for="entryNotes">Informações adicionais <span class="optional">(opcional)</span></label>
+          <textarea id="entryNotes" rows="3" maxlength="1000"></textarea>
+          <p class="admin-warning">Alterar uma cobrança de pendente para paga envia uma confirmação por e-mail ao devedor.</p>
+          <div class="form-actions">
+            <button id="btnSaveAdminEntry" class="button button-primary" type="submit">Criar lançamento</button>
+            <button id="btnCancelAdminEdit" class="button button-quiet" type="button" hidden>Cancelar edição</button>
+          </div>
+          <p id="adminFormMessage" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="panel admin-transactions-panel">
+        <div class="transactions-heading">
+          <div>
+            <p class="eyebrow">DADOS CONFIDENCIAIS</p>
+            <h2>Lançamentos de todas as contas</h2>
+          </div>
+          <button id="btnReloadAdmin" class="button button-quiet" type="button">Atualizar</button>
+        </div>
+        <div class="admin-filters">
+          <label>
+            <span class="visually-hidden">Buscar lançamentos desta página</span>
+            <input id="searchAdminEntries" type="search" placeholder="Buscar nesta página..." autocomplete="off">
+          </label>
+          <label>
+            <span class="visually-hidden">Filtrar tipo de lançamento</span>
+            <select id="filterAdminKind">
+              <option value="">Todos os tipos</option>
+              <option value="income">Entradas</option>
+              <option value="expense">Saídas</option>
+              <option value="charge">Cobranças</option>
+            </select>
+          </label>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Titular</th><th>Data</th><th>Tipo</th><th>Lançamento</th><th>Valor</th><th>Situação</th><th><span class="visually-hidden">Ações</span></th></tr>
+            </thead>
+            <tbody id="adminEntriesBody"></tbody>
+          </table>
+          <div id="adminEmptyState" class="empty-state" hidden>
+            <h3>Nenhum lançamento encontrado</h3>
+            <p>Ajuste a busca ou crie um lançamento para uma conta.</p>
+          </div>
+        </div>
+        <div class="admin-pagination">
+          <button id="btnPreviousPage" class="button button-quiet" type="button" disabled>Anterior</button>
+          <span id="adminPageInfo" class="result-count">Página 1</span>
+          <button id="btnNextPage" class="button button-quiet" type="button" disabled>Próxima</button>
+        </div>
+      </section>
+    </section>
+
+    <footer class="dashboard-footer admin-footer">
+      <p>As ações administrativas são protegidas por autenticação multifator e registradas no servidor.</p>
+      <nav class="legal-links" aria-label="Informações legais">
+        <a href="../Legal/Index.html#privacidade">Privacidade</a>
+        <a href="../Legal/Index.html#termos">Termos de uso</a>
+      </nav>
+    </footer>
+  </main>
+  <script type="module" src="Admin.js"></script>
+</body>
+</html>

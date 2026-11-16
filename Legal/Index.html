@@ -55,7 +55,7 @@
 
       <h3>Base, armazenamento e segurança</h3>
       <p>Para dados da conta, as bases legais podem incluir a execução do serviço solicitado, o cumprimento de obrigações legais e, para proteção e prevenção de abuso, o legítimo interesse, conforme cada finalidade. Para dados de terceiros inseridos nos lançamentos, cabe ao usuário que os cadastrou determinar e documentar a base legal aplicável e fornecer as informações exigidas pela LGPD.</p>
-      <p>O Firebase Authentication gerencia as credenciais de acesso; a senha não é salva nos documentos do sistema. Regras do Firestore restringem os registros financeiros ao titular autenticado com e-mail verificado, e credenciais SMTP ficam no ambiente de servidor.</p>
+      <p>O Firebase Authentication gerencia as credenciais de acesso; a senha não é salva nos documentos do sistema. Regras do Firestore isolam o acesso direto aos lançamentos por titular verificado. A área administrativa, acessível somente a uma conta autorizada com TOTP e sessão recente, pode consultar e criar, editar ou excluir lançamentos de qualquer conta. Essas operações passam por Cloud Functions e são registradas no log do servidor sem incluir valores ou conteúdo financeiro no registro de auditoria. Credenciais SMTP ficam no ambiente de servidor.</p>
       <p>Adotamos essas medidas para reduzir riscos, mas nenhum serviço conectado à internet pode prometer segurança absoluta. Mantenha sua senha protegida e não compartilhe o acesso à sua conta.</p>
 
       <h3>Retenção e exclusão</h3>
@@ -90,6 +90,9 @@
 
       <h3>Propriedade intelectual</h3>
       <p>O sistema VD-Finanças, sua identidade visual e seus materiais são identificados como propriedade de Felipe Dias Vendramel, salvo componentes de terceiros sujeitos às respectivas licenças. Nenhum direito de cópia, modificação, distribuição, sublicenciamento ou exploração comercial é concedido sem autorização escrita do titular. Este aviso não declara registro de marca nem altera a visibilidade do repositório onde o código possa estar hospedado.</p>
+
+      <h3>Acesso administrativo a dados</h3>
+      <p>Para suporte, manutenção, segurança e gestão do serviço, o administrador autorizado pode consultar e alterar lançamentos financeiros, inclusive dados de terceiros cadastrados em cobranças. As ações administrativas passam pelo servidor e são registradas para auditoria. O usuário que cadastrou dados de terceiros continua responsável por ter autorização e base legal para fazê-lo.</p>
 
       <h3>Alterações, encerramento e contato</h3>
       <p>Estes termos podem ser atualizados junto com a evolução do sistema. O usuário pode parar de usar o serviço e excluir sua conta pelo painel. Para dúvidas sobre estes termos, escreva para <a href="mailto:Felipediasvendramel@gmail.com">Felipediasvendramel@gmail.com</a>.</p>

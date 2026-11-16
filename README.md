@@ -19,6 +19,8 @@ e-mail.
   envio de e-mail.
 - Política de Privacidade LGPD, Termos de Uso e exclusão de conta com
   reautenticação e remoção dos registros associados.
+- Área administrativa com claim personalizada, TOTP obrigatório e funções de
+  servidor para consultar e gerenciar lançamentos de todas as contas.
 
 ## Modelo de dados
 
@@ -68,6 +70,55 @@ um endereço autorizado pelo provedor. A Function `notifyPaidCharge` envia a
 confirmação quando a cobrança passa para paga; `retryPaymentConfirmation`
 permite reenviar com autenticação. Após a publicação, consulte os logs das
 Functions e teste a entrega real com uma cobrança de teste.
+
+## Acesso administrativo e MFA
+
+A rota `Admin/Index.html` não concede acesso por ser conhecida ou estar
+publicada. O servidor só aceita operações administrativas quando a sessão tem
+claim `admin`, e-mail verificado, MFA TOTP concluído e autenticação recente
+(últimos cinco minutos). A área pode ler e criar, editar ou excluir lançamentos
+de qualquer conta; não pode excluir contas de usuários. O acesso administrativo
+usa Cloud Functions e não amplia as regras de leitura direta do Firestore.
+
+1. No Firebase Console, atualize o projeto para **Firebase Authentication with
+   Identity Platform** e habilite **TOTP** como segundo fator. TOTP requer
+   Identity Platform.
+2. Crie ou confirme a conta administrativa, verifique o e-mail e use uma senha
+   exclusiva e forte. A senha nunca deve ser colocada neste repositório, em
+   variáveis versionadas ou enviada por mensagem.
+3. Instale as dependências locais da Function e autentique o Google Cloud SDK
+   com uma conta que tenha permissão administrativa de Firebase Authentication:
+
+   ```powershell
+   npm install --prefix .\functions
+   gcloud auth application-default login
+   $env:VD_ADMIN_EMAIL = '<e-mail da conta verificada>'
+   node .\functions\scripts\manage-admin-claim.js grant
+   Remove-Item Env:\VD_ADMIN_EMAIL
+   ```
+
+4. Publique as Functions. Encerre as sessões abertas, abra **Acesso do
+   administrador**, entre com a conta e cadastre a chave TOTP em um aplicativo
+   autenticador. Após confirmar o primeiro código, entre novamente e valide o
+   segundo fator para abrir o painel.
+
+O script `manage-admin-claim.js` não é enviado no pacote de Functions. Para
+revogar o acesso, use a ação `revoke`; se o autenticador for perdido, a ação
+`reset-mfa` remove os fatores para permitir novo cadastro após login com senha:
+
+```powershell
+$env:VD_ADMIN_EMAIL = '<e-mail da conta administrativa>'
+node .\functions\scripts\manage-admin-claim.js revoke
+# ou, para recuperar um autenticador perdido:
+node .\functions\scripts\manage-admin-claim.js reset-mfa
+Remove-Item Env:\VD_ADMIN_EMAIL
+```
+
+Proteja também o acesso ao Google Cloud/Firebase Console e a credencial ADC usada
+para administrar claims: quem controla essa credencial pode conceder ou revogar
+administradores. As operações de leitura e alteração administrativa geram
+registros de auditoria no Cloud Logging, sem gravar os valores financeiros
+nesses registros.
 
 ## Privacidade, exclusão e titularidade
 
