@@ -17,6 +17,8 @@ e-mail.
 - Regras do Firestore que validam os dados, restringem acesso ao proprietário
   com e-mail verificado e impedem a alteração pelo navegador dos estados de
   envio de e-mail.
+- Política de Privacidade LGPD, Termos de Uso e exclusão de conta com
+  reautenticação e remoção dos registros associados.
 
 ## Modelo de dados
 
@@ -41,6 +43,10 @@ Sua conta precisa ter acesso ao projeto no Firebase Console.
    coloque usuário, senha ou tokens SMTP no frontend ou em arquivos versionados.
 5. A implantação de Cloud Functions exige o plano Firebase Blaze e faturamento
    configurado. O provedor SMTP pode ter custos e limites próprios.
+6. Restrinja a chave pública do Firebase às APIs e domínios necessários no
+   Google Cloud Console. A chave usada no frontend identifica o projeto; não é
+   uma senha. A proteção dos dados depende principalmente das regras do
+   Firestore, da autenticação e da configuração correta do projeto.
 
 Instale Node.js 22, npm e Firebase CLI. Na raiz do projeto, autentique-se e
 cadastre os dados SMTP como secrets; cada comando solicita o valor
@@ -62,6 +68,19 @@ um endereço autorizado pelo provedor. A Function `notifyPaidCharge` envia a
 confirmação quando a cobrança passa para paga; `retryPaymentConfirmation`
 permite reenviar com autenticação. Após a publicação, consulte os logs das
 Functions e teste a entrega real com uma cobrança de teste.
+
+## Privacidade, exclusão e titularidade
+
+A Política de Privacidade e os Termos de Uso ficam disponíveis em
+[`Legal/Index.html`](./Legal/Index.html), inclusive na tela de acesso e no
+rodapé do painel. A exclusão da conta exige senha recente e remove os registros
+associados da conta no Firebase; publique a Function `deleteMyAccount` junto
+com as demais para habilitar o fluxo.
+
+O arquivo [`LICENSE`](./LICENSE) declara a licença proprietária e reserva os
+direitos de uso. Esse aviso não altera a visibilidade do repositório no GitHub;
+um repositório público continua publicamente visível. Componentes de terceiros
+mantêm as respectivas licenças.
 
 ## Executar localmente
 

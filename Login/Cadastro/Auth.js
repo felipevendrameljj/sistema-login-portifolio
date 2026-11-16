@@ -63,6 +63,9 @@ onAuthStateChanged(auth, (user) => {
 if (new URLSearchParams(location.search).has("verify")) {
   show("loginMsg", "Confirme seu e-mail pelo link enviado para acessar sua conta.", "success");
 }
+if (new URLSearchParams(location.search).has("deleted")) {
+  show("loginMsg", "Sua conta e os dados ativos associados foram excluídos.", "success");
+}
 
 $("toRegister").addEventListener("click", () => toggleRegister(true));
 $("toLogin").addEventListener("click", () => toggleRegister(false));

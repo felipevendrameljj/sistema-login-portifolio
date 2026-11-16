@@ -1,5 +1,7 @@
 import { auth, db, functions } from "../FirebaseConfig/Index.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  EmailAuthProvider, onAuthStateChanged, reauthenticateWithCredential, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   addDoc, collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, updateDoc, where
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -396,6 +398,62 @@ $("btnLogout").addEventListener("click", async () => {
   }
 });
 
+const deleteAccountDialog = $("deleteAccountDialog");
+const deleteAccountForm = $("deleteAccountForm");
+const deleteAccountConfirmation = $("deleteAccountConfirmation");
+const deleteAccountPassword = $("deleteAccountPassword");
+const deleteAccountSubmit = $("btnConfirmDelete");
+
+$("btnOpenDeleteAccount").addEventListener("click", () => {
+  deleteAccountForm.reset();
+  deleteAccountSubmit.disabled = true;
+  $("deleteAccountMessage").textContent = "";
+  deleteAccountDialog.showModal();
+  deleteAccountPassword.focus();
+});
+
+$("btnCancelDelete").addEventListener("click", () => deleteAccountDialog.close());
+deleteAccountDialog.addEventListener("close", () => deleteAccountForm.reset());
+deleteAccountConfirmation.addEventListener("input", () => {
+  deleteAccountSubmit.disabled = deleteAccountConfirmation.value !== "EXCLUIR";
+});
+
+deleteAccountForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!currentUser || deleteAccountConfirmation.value !== "EXCLUIR") return;
+  if (!currentUser.email) {
+    $("deleteAccountMessage").textContent = "Não foi possível confirmar o e-mail desta conta.";
+    return;
+  }
+
+  deleteAccountSubmit.disabled = true;
+  $("btnCancelDelete").disabled = true;
+  $("deleteAccountMessage").textContent = "Confirmando sua identidade e excluindo os dados...";
+  try {
+    const credential = EmailAuthProvider.credential(currentUser.email, deleteAccountPassword.value);
+    await reauthenticateWithCredential(currentUser, credential);
+    await httpsCallable(functions, "deleteMyAccount")();
+  } catch (error) {
+    console.error("Falha ao excluir a conta e os dados:", error);
+    const message = error.code === "auth/wrong-password" || error.code === "auth/invalid-credential"
+      ? "Senha incorreta. Confira sua senha e tente novamente."
+      : error.code === "functions/failed-precondition"
+        ? "Sua sessão expirou. Entre novamente e repita a exclusão."
+        : "Não foi possível concluir a exclusão. Seus dados podem ter sido parcialmente removidos; entre novamente e tente de novo.";
+    $("deleteAccountMessage").textContent = message;
+    deleteAccountSubmit.disabled = deleteAccountConfirmation.value !== "EXCLUIR";
+    $("btnCancelDelete").disabled = false;
+    return;
+  }
+
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("Falha ao encerrar localmente a sessão após excluir a conta:", error);
+  }
+  location.replace("../Login/Index.html?deleted=1");
+});
+
 resetForm();
 onAuthStateChanged(auth, (user) => {
   if (!user) {
@@ -409,6 +467,7 @@ onAuthStateChanged(auth, (user) => {
 
   currentUser = user;
   $("userName").textContent = user.displayName || user.email || "Minha conta";
+  $("btnOpenDeleteAccount").disabled = false;
   if (stopEntriesListener) stopEntriesListener();
 
   const userEntries = query(collection(db, "transactions"), where("uid", "==", user.uid));

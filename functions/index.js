@@ -1,6 +1,7 @@
 const { randomUUID } = require("node:crypto");
 const nodemailer = require("nodemailer");
 const { initializeApp } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
 const { FieldValue, getFirestore } = require("firebase-admin/firestore");
 const { logger } = require("firebase-functions");
 const { defineSecret } = require("firebase-functions/params");
@@ -195,5 +196,53 @@ exports.retryPaymentConfirmation = onCall({
       error: error.message
     });
     throw new HttpsError("internal", "Não foi possível reenviar a confirmação.");
+  }
+});
+
+async function deleteUserDocuments(collectionName, uid) {
+  while (true) {
+    const snapshot = await db.collection(collectionName)
+      .where("uid", "==", uid)
+      .limit(400)
+      .get();
+    if (snapshot.empty) return;
+
+    const batch = db.batch();
+    snapshot.docs.forEach((document) => batch.delete(document.ref));
+    await batch.commit();
+  }
+}
+
+exports.deleteMyAccount = onCall({
+  timeoutSeconds: 300
+}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Entre na sua conta para continuar.");
+  }
+  if (request.auth.token.email_verified !== true) {
+    throw new HttpsError("failed-precondition", "Confirme seu e-mail antes de excluir a conta.");
+  }
+
+  const authTime = request.auth.token.auth_time;
+  const now = Math.floor(Date.now() / 1000);
+  if (!Number.isInteger(authTime) || authTime > now + 60 || now - authTime > 5 * 60) {
+    throw new HttpsError("failed-precondition", "Confirme sua senha novamente antes de excluir a conta.");
+  }
+
+  const uid = request.auth.uid;
+  try {
+    for (const collectionName of ["transactions", "expenses", "products"]) {
+      await deleteUserDocuments(collectionName, uid);
+    }
+    await db.doc(`users/${uid}`).delete();
+    await getAuth().deleteUser(uid);
+    logger.info("Account and associated financial records deleted.");
+    return { deleted: true };
+  } catch (error) {
+    logger.error("Account deletion failed.", { code: error.code || "unknown" });
+    throw new HttpsError(
+      "internal",
+      "Não foi possível concluir a exclusão. Entre novamente e tente mais uma vez."
+    );
   }
 });

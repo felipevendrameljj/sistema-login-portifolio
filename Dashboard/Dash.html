@@ -172,8 +172,33 @@
         </div>
       </section>
     </div>
-    <footer class="dashboard-footer">Seus dados financeiros são privados e visíveis somente para sua conta.</footer>
+    <footer class="dashboard-footer">
+      <p>Seus dados financeiros são restritos à sua conta.</p>
+      <nav class="legal-links" aria-label="Informações legais">
+        <a href="../Legal/Index.html#privacidade">Privacidade</a>
+        <a href="../Legal/Index.html#termos">Termos de uso</a>
+        <button id="btnOpenDeleteAccount" class="text-button text-button-danger" type="button" disabled>Excluir minha conta e dados</button>
+      </nav>
+      <p class="copyright-notice">VD-Finanças · Titular informado: Felipe Dias Vendramel · Direitos reservados.</p>
+    </footer>
   </main>
+
+  <dialog id="deleteAccountDialog" class="confirm-dialog" aria-labelledby="deleteAccountTitle">
+    <form id="deleteAccountForm">
+      <p class="eyebrow">AÇÃO IRREVERSÍVEL</p>
+      <h2 id="deleteAccountTitle">Excluir conta e dados?</h2>
+      <p>Isso apagará sua conta e os lançamentos financeiros associados. Não será possível recuperar esses dados.</p>
+      <label for="deleteAccountPassword">Confirme sua senha</label>
+      <input id="deleteAccountPassword" type="password" autocomplete="current-password" required>
+      <label for="deleteAccountConfirmation">Digite EXCLUIR para confirmar</label>
+      <input id="deleteAccountConfirmation" type="text" autocomplete="off" required>
+      <p id="deleteAccountMessage" class="form-message" role="status" aria-live="polite"></p>
+      <div class="form-actions">
+        <button id="btnCancelDelete" class="button button-quiet" type="button">Cancelar</button>
+        <button id="btnConfirmDelete" class="button button-danger" type="submit" disabled>Excluir definitivamente</button>
+      </div>
+    </form>
+  </dialog>
   <script type="module" src="Dash.js"></script>
 </body>
 </html>
