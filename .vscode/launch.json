@@ -7,10 +7,10 @@
         {
             "type": "pwa-chrome",
             "request": "launch",
-            "name": "Run Controle de Gastos",
+            "name": "Run VD-Finanças",
             "url": "http://localhost:8080/",
             "webRoot": "${workspaceFolder}",
-            "preLaunchTask": "Serve Controle de Gastos"
+            "preLaunchTask": "Serve VD-Finanças"
         }
     ]
 }

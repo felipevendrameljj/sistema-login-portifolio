@@ -3,44 +3,177 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Gastos</title>
+  <meta name="theme-color" content="#f5f7fb">
+  <title>VD-Finanças | Controle financeiro</title>
   <link rel="stylesheet" href="../Style/Style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
-<body>
+<body class="dashboard">
   <header class="topbar">
-    <h1>Controle de Gastos</h1>
-    <div><span id="userName"></span> <button id="btnLogout" class="outline">Sair</button></div>
+    <a class="brand" href="../index.html" aria-label="VD-Finanças, início">
+      <span class="brand-mark" aria-hidden="true">VD</span>
+      <span>VD-Finanças<span class="brand-period">.</span></span>
+    </a>
+    <div class="topbar-account">
+      <div class="account-copy">
+        <span class="account-label">Conectado como</span>
+        <strong id="userName"></strong>
+      </div>
+      <button id="btnLogout" class="button button-quiet" type="button">Sair</button>
+    </div>
   </header>
 
-  <main class="wrap">
-    <section class="form">
-      <input id="description" placeholder="Descrição (Ex: Pizza)">
-      <select id="category">
-        <option>Alimentação</option>
-        <option>Transporte</option>
-        <option>Moradia</option>
-        <option>Lazer</option>
-        <option>Saúde</option>
-        <option>Outros</option>
-      </select>
-      <input id="amount" type="number" min="0" step="0.01" placeholder="Valor (R$)">
-      <button id="btnAdd">Adicionar</button>
+  <main class="dashboard-main">
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">CONTROLE FINANCEIRO</p>
+        <h1>Visão geral</h1>
+        <p class="muted">Acompanhe seu caixa, suas contas e as cobranças.</p>
+      </div>
     </section>
 
-    <p class="total">Total: <strong id="total">R$ 0,00</strong></p>
+    <section class="stats-grid" aria-label="Resumo financeiro do mês">
+      <article class="stat-card">
+        <span class="stat-icon stat-icon-green" aria-hidden="true">↑</span>
+        <div><p>Entradas no mês</p><strong id="monthlyIncome">R$ 0,00</strong></div>
+      </article>
+      <article class="stat-card">
+        <span class="stat-icon stat-icon-red" aria-hidden="true">↓</span>
+        <div><p>Saídas no mês</p><strong id="monthlyExpenses">R$ 0,00</strong></div>
+      </article>
+      <article class="stat-card">
+        <span class="stat-icon stat-icon-blue" aria-hidden="true">=</span>
+        <div><p>Saldo do mês</p><strong id="monthlyBalance">R$ 0,00</strong></div>
+      </article>
+      <article class="stat-card">
+        <span class="stat-icon stat-icon-amber" aria-hidden="true">⌛</span>
+        <div><p>Cobranças em aberto</p><strong id="openCharges">R$ 0,00</strong><small id="openChargeCount">0 cobranças</small></div>
+      </article>
+    </section>
 
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Data</th><th></th></tr></thead>
-        <tbody id="expensesBody"></tbody>
-      </table>
-      <p id="empty" class="msg">Nenhum gasto cadastrado ainda.</p>
+    <div class="content-grid">
+      <section class="panel entry-form-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">MOVIMENTAÇÃO</p>
+            <h2 id="formTitle">Novo lançamento</h2>
+          </div>
+        </div>
+        <form id="entryForm" class="entry-form">
+          <label for="entryKind">Tipo de lançamento</label>
+          <select id="entryKind" name="kind" required>
+            <option value="income">Entrada</option>
+            <option value="expense">Saída</option>
+            <option value="charge">Cobrança</option>
+          </select>
+
+          <label for="entryDescription">Descrição</label>
+          <input id="entryDescription" name="description" type="text" maxlength="140" placeholder="Ex.: Serviço de manutenção" required>
+
+          <label for="entryCategory">Categoria</label>
+          <select id="entryCategory" name="category" required>
+            <option value="Vendas">Vendas</option>
+            <option value="Serviços">Serviços</option>
+            <option value="Salário">Salário</option>
+            <option value="Alimentação">Alimentação</option>
+            <option value="Moradia">Moradia</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Contas">Contas</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Educação">Educação</option>
+            <option value="Lazer">Lazer</option>
+            <option value="Outros">Outros</option>
+          </select>
+
+          <label for="entryAmount">Valor (R$)</label>
+          <input id="entryAmount" name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00" required>
+
+          <label id="entryDateLabel" for="entryDate">Data do lançamento</label>
+          <input id="entryDate" name="date" type="date" required>
+
+          <div id="counterpartyFields" class="conditional-fields" hidden>
+            <label id="counterpartyNameLabel" for="counterpartyName">Origem (opcional)</label>
+            <input id="counterpartyName" name="counterpartyName" type="text" maxlength="100" placeholder="Nome completo">
+            <label id="counterpartyEmailLabel" for="counterpartyEmail">E-mail (opcional)</label>
+            <input id="counterpartyEmail" name="counterpartyEmail" type="email" maxlength="254" placeholder="devedor@exemplo.com">
+          </div>
+
+          <div id="chargeFields" class="conditional-fields" hidden>
+            <label for="dueDate">Data de vencimento</label>
+            <input id="dueDate" name="dueDate" type="date">
+            <label for="chargeStatus">Situação da cobrança</label>
+            <select id="chargeStatus" name="status">
+              <option value="pending">Em aberto</option>
+              <option value="paid">Paga</option>
+            </select>
+            <div id="paymentDateField" hidden>
+              <label for="paymentDate">Data do pagamento</label>
+              <input id="paymentDate" name="paymentDate" type="date">
+            </div>
+          </div>
+
+          <label for="entryNotes">Informações adicionais <span class="optional">(opcional)</span></label>
+          <textarea id="entryNotes" name="notes" rows="3" maxlength="1000" placeholder="Observações sobre este lançamento"></textarea>
+
+          <div class="form-actions">
+            <button id="btnSave" class="button button-primary" type="submit">Salvar lançamento</button>
+            <button id="btnCancelEdit" class="button button-quiet" type="button" hidden>Cancelar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel transactions-panel">
+        <div class="transactions-heading">
+          <div>
+            <p class="eyebrow">FLUXO DE CAIXA</p>
+            <h2>Lançamentos</h2>
+          </div>
+          <span id="visibleCount" class="result-count">0 itens</span>
+        </div>
+
+        <div class="filters">
+          <label class="search-field">
+            <span class="visually-hidden">Buscar lançamento</span>
+            <span aria-hidden="true">⌕</span>
+            <input id="searchEntries" type="search" placeholder="Buscar lançamento ou pessoa..." autocomplete="off">
+          </label>
+          <label>
+            <span class="visually-hidden">Filtrar por tipo</span>
+            <select id="filterKind">
+              <option value="">Todos os tipos</option>
+              <option value="income">Entradas</option>
+              <option value="expense">Saídas</option>
+              <option value="charge">Cobranças</option>
+            </select>
+          </label>
+          <label>
+            <span class="visually-hidden">Filtrar por situação</span>
+            <select id="filterStatus">
+              <option value="">Todas as situações</option>
+              <option value="pending">Em aberto</option>
+              <option value="paid">Cobranças pagas</option>
+            </select>
+          </label>
+        </div>
+
+        <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Data</th><th>Tipo</th><th>Lançamento</th><th>Valor</th><th>Situação</th><th><span class="visually-hidden">Ações</span></th></tr>
+            </thead>
+            <tbody id="entriesBody"></tbody>
+          </table>
+          <div id="emptyState" class="empty-state" hidden>
+            <span class="empty-icon" aria-hidden="true">R$</span>
+            <h3 id="emptyTitle">Nenhum lançamento cadastrado</h3>
+            <p id="emptyDescription">Registre sua primeira entrada, saída ou cobrança.</p>
+          </div>
+        </div>
+      </section>
     </div>
-
-    <div class="chart"><canvas id="expenseChart"></canvas></div>
+    <footer class="dashboard-footer">Seus dados financeiros são privados e visíveis somente para sua conta.</footer>
   </main>
-
   <script type="module" src="Dash.js"></script>
 </body>
 </html>

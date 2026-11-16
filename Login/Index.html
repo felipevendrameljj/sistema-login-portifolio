@@ -3,37 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login / Cadastro</title>
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Acesse sua conta | VD-Finanças</title>
   <link rel="stylesheet" href="../Style/Style.css">
 </head>
-<body class="center">
-  <main class="card">
-    <h1>Bem-vindo!</h1>
+<body class="auth-page">
+  <main class="auth-layout">
+    <aside class="auth-intro">
+      <a class="brand brand-light" href="../index.html" aria-label="VD-Finanças, início">
+        <span class="brand-mark" aria-hidden="true">VD</span>
+        <span>VD-Finanças<span class="brand-period">.</span></span>
+      </a>
+      <div class="auth-intro-copy">
+        <p class="eyebrow">GESTÃO SIMPLES, DIA A DIA MELHOR</p>
+        <h1>Seu dinheiro,<br>sempre em ordem.</h1>
+        <p>Controle entradas, saídas e cobranças em um só lugar, com clareza sobre cada data e pagamento.</p>
+      </div>
+      <p class="auth-aside-note">Prático para você. Seguro para seus dados.</p>
+    </aside>
 
-    <section id="login-box" class="box">
-      <input id="loginEmail" type="email" placeholder="Email" autocomplete="email">
-      <input id="loginPassword" type="password" placeholder="Senha" autocomplete="current-password">
-      <button id="btnLogin">Entrar</button>
-      <button id="btnReset" class="link">Esqueci minha senha</button>
-      <p id="loginMsg" class="msg"></p>
-      <p>Não tem conta? <button id="toRegister" class="link">Cadastre-se</button></p>
-      <div class="social">
-        <button id="btnGoogle" class="outline">Google</button>
-        <button id="btnGithub" class="outline">GitHub</button>
-        <button id="btnFacebook" class="outline">Facebook</button>
+    <section class="auth-content">
+      <div class="auth-card">
+        <div class="auth-card-heading">
+          <p class="eyebrow">BEM-VINDO DE VOLTA</p>
+          <h2 id="authTitle">Acesse sua conta</h2>
+          <p id="authSubtitle" class="muted">Entre com seu e-mail e senha para continuar.</p>
+        </div>
+
+        <section id="login-box" class="auth-form">
+          <form id="loginForm">
+            <label for="loginEmail">E-mail</label>
+            <input id="loginEmail" type="email" placeholder="voce@exemplo.com" autocomplete="email" required>
+            <label for="loginPassword">Senha</label>
+            <input id="loginPassword" type="password" placeholder="Sua senha" autocomplete="current-password" required>
+            <button id="btnLogin" class="button button-primary button-full" type="submit">Entrar</button>
+          </form>
+          <div class="auth-links">
+            <button id="btnReset" class="text-button" type="button">Esqueci minha senha</button>
+            <button id="btnResendVerification" class="text-button" type="button">Reenviar verificação</button>
+          </div>
+          <p id="loginMsg" class="form-message" role="status" aria-live="polite"></p>
+          <p class="auth-switch">Ainda não tem uma conta? <button id="toRegister" class="text-button" type="button">Criar conta</button></p>
+        </section>
+
+        <section id="register-box" class="auth-form" hidden>
+          <form id="registerForm">
+            <label for="name">Nome</label>
+            <input id="name" type="text" placeholder="Como podemos te chamar?" autocomplete="name" maxlength="80" required>
+            <label for="email">E-mail</label>
+            <input id="email" type="email" placeholder="voce@exemplo.com" autocomplete="email" required>
+            <label for="password">Senha</label>
+            <input id="password" type="password" placeholder="Pelo menos 6 caracteres" autocomplete="new-password" minlength="6" required>
+            <button id="btnRegister" class="button button-primary button-full" type="submit">Criar minha conta</button>
+          </form>
+          <p id="msg" class="form-message" role="status" aria-live="polite"></p>
+          <p class="auth-switch">Já tem uma conta? <button id="toLogin" class="text-button" type="button">Entrar</button></p>
+        </section>
+        <p class="privacy-note">Ao continuar, seus dados de acesso são protegidos pelo Firebase Authentication.</p>
       </div>
     </section>
-
-    <section id="register-box" class="box" hidden>
-      <input id="name" type="text" placeholder="Nome" autocomplete="name">
-      <input id="email" type="email" placeholder="Email" autocomplete="email">
-      <input id="password" type="password" placeholder="Senha (mín. 6 caracteres)" autocomplete="new-password">
-      <button id="btnRegister">Cadastrar</button>
-      <p id="msg" class="msg"></p>
-      <p>Já tem conta? <button id="toLogin" class="link">Entrar</button></p>
-    </section>
   </main>
-
   <script type="module" src="Cadastro/Auth.js"></script>
 </body>
 </html>

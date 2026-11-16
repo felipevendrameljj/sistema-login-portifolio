@@ -6,40 +6,116 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create, update: if isOwner(userId)
-        && request.resource.data.keys().hasOnly([
+    function isVerifiedOwner(userId) {
+      return isOwner(userId) && request.auth.token.email_verified == true;
+    }
+
+    function validDate(value) {
+      return value is string && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function validProfile() {
+      return request.resource.data.keys().hasOnly([
           'name', 'email', 'createdAt', 'lastLogin'
         ])
         && request.resource.data.keys().hasAll(['name', 'email'])
         && request.resource.data.name is string
+        && request.resource.data.name.size() <= 80
         && request.resource.data.email is string
+        && request.resource.data.email.size() <= 254
         && (!('createdAt' in request.resource.data)
           || request.resource.data.createdAt is timestamp)
         && (!('lastLogin' in request.resource.data)
           || request.resource.data.lastLogin is timestamp);
     }
 
-    match /expenses/{expenseId} {
-      allow read, delete: if request.auth != null
-        && resource.data.uid == request.auth.uid;
-      allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly([
-          'uid', 'category', 'description', 'amount', 'date'
+    function validTransaction() {
+      return request.resource.data.keys().hasOnly([
+          'uid', 'kind', 'description', 'category', 'amountCents', 'date',
+          'dueDate', 'paymentDate', 'status', 'counterpartyName',
+          'counterpartyEmail', 'notes', 'createdAt', 'updatedAt',
+          'paymentEmailStatus', 'paymentEmailSentAt', 'paymentEmailError',
+          'paymentEmailLockAt', 'paymentEmailLockId'
         ])
         && request.resource.data.keys().hasAll([
-          'uid', 'category', 'description', 'amount', 'date'
+          'uid', 'kind', 'description', 'category', 'amountCents', 'date',
+          'dueDate', 'paymentDate', 'status', 'counterpartyName',
+          'counterpartyEmail', 'notes', 'createdAt', 'updatedAt'
         ])
         && request.resource.data.uid == request.auth.uid
-        && request.resource.data.category in [
-          'Alimentação', 'Transporte', 'Moradia', 'Lazer', 'Saúde', 'Outros'
-        ]
+        && request.resource.data.kind in ['income', 'expense', 'charge']
         && request.resource.data.description is string
         && request.resource.data.description.size() > 0
-        && request.resource.data.amount is number
-        && request.resource.data.amount > 0
-        && request.resource.data.date is timestamp;
+        && request.resource.data.description.size() <= 140
+        && request.resource.data.category in [
+          'Vendas', 'Serviços', 'Salário', 'Alimentação', 'Moradia',
+          'Transporte', 'Contas', 'Saúde', 'Educação', 'Lazer', 'Outros'
+        ]
+        && request.resource.data.amountCents is int
+        && request.resource.data.amountCents > 0
+        && validDate(request.resource.data.date)
+        && request.resource.data.dueDate is string
+        && request.resource.data.paymentDate is string
+        && request.resource.data.status in ['pending', 'paid']
+        && request.resource.data.counterpartyName is string
+        && request.resource.data.counterpartyName.size() <= 100
+        && request.resource.data.counterpartyEmail is string
+        && request.resource.data.counterpartyEmail.size() <= 254
+        && request.resource.data.notes is string
+        && request.resource.data.notes.size() <= 1000
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && (request.resource.data.kind == 'charge'
+          ? request.resource.data.status in ['pending', 'paid']
+            && request.resource.data.counterpartyName.size() > 0
+            && request.resource.data.counterpartyEmail.matches('^[^@]+@[^@]+\\.[^@]+$')
+            && validDate(request.resource.data.dueDate)
+            && (request.resource.data.status == 'pending'
+              ? request.resource.data.paymentDate == ''
+              : validDate(request.resource.data.paymentDate))
+          : request.resource.data.status == 'paid'
+            && request.resource.data.dueDate == ''
+            && request.resource.data.paymentDate == '')
+        && (!('paymentEmailStatus' in request.resource.data)
+          || request.resource.data.paymentEmailStatus in ['sending', 'sent', 'failed'])
+        && (!('paymentEmailSentAt' in request.resource.data)
+          || request.resource.data.paymentEmailSentAt is timestamp)
+        && (!('paymentEmailError' in request.resource.data)
+          || request.resource.data.paymentEmailError is string)
+        && (!('paymentEmailLockAt' in request.resource.data)
+          || request.resource.data.paymentEmailLockAt is int)
+        && (!('paymentEmailLockId' in request.resource.data)
+          || request.resource.data.paymentEmailLockId is string);
+    }
+
+    function clientMayWriteTransaction() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'description', 'category', 'amountCents', 'date', 'dueDate',
+        'paymentDate', 'status', 'counterpartyName', 'counterpartyEmail',
+        'notes', 'updatedAt'
+      ]);
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validProfile();
+    }
+
+    match /transactions/{transactionId} {
+      allow read, delete: if isVerifiedOwner(resource.data.uid);
+      allow create: if isVerifiedOwner(request.auth.uid)
+        && validTransaction()
+        && !request.resource.data.keys().hasAny([
+          'paymentEmailStatus', 'paymentEmailSentAt', 'paymentEmailError',
+          'paymentEmailLockAt', 'paymentEmailLockId'
+        ]);
+      allow update: if isVerifiedOwner(resource.data.uid)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.kind == resource.data.kind
+        && request.resource.data.createdAt == resource.data.createdAt
+        && (resource.data.status != 'paid' || request.resource.data.status == 'paid')
+        && clientMayWriteTransaction()
+        && validTransaction();
     }
   }
 }

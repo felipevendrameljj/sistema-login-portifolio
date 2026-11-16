@@ -1,4 +1,14 @@
 {
+  "functions": {
+    "source": "functions",
+    "codebase": "default",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log"
+    ]
+  },
   "firestore": {
     "rules": "firestore.rules"
   },
@@ -8,6 +18,7 @@
       "**/.*",
       ".vscode/**",
       "**/node_modules/**",
+      "functions/**",
       "firebase.json",
       "firestore.rules",
       "README.md"

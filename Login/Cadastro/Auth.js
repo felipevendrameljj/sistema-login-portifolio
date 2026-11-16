@@ -1,101 +1,180 @@
-import { auth, db, providers } from "../../FirebaseConfig/Index.js";
+import { auth, db } from "../../FirebaseConfig/Index.js";
 import {
-  createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup,
-  sendPasswordResetEmail, updateProfile, onAuthStateChanged
+  createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification,
+  sendPasswordResetEmail, signInWithEmailAndPassword, signOut, updateProfile
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { doc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
 const ERRORS = {
-  "auth/invalid-credential": "Email ou senha inválidos.",
-  "auth/user-not-found": "Email ou senha inválidos.",
-  "auth/wrong-password": "Email ou senha inválidos.",
-  "auth/email-already-in-use": "Este email já está cadastrado.",
+  "auth/invalid-credential": "E-mail ou senha inválidos.",
+  "auth/user-not-found": "E-mail ou senha inválidos.",
+  "auth/wrong-password": "E-mail ou senha inválidos.",
+  "auth/email-already-in-use": "Este e-mail já está cadastrado.",
   "auth/weak-password": "A senha precisa ter pelo menos 6 caracteres.",
-  "auth/invalid-email": "Email inválido.",
-  "auth/popup-closed-by-user": "Login cancelado.",
+  "auth/invalid-email": "Informe um e-mail válido.",
   "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde.",
-  "auth/network-request-failed": "Sem conexão com a internet.",
-  "auth/account-exists-with-different-credential": "Já existe uma conta com este email por outro método de login."
+  "auth/network-request-failed": "Sem conexão com a internet. Verifique sua rede e tente novamente.",
+  "auth/operation-not-allowed": "O acesso por e-mail ainda não está habilitado no Firebase."
 };
 
-let busy = false; // evita redirecionar antes de salvar o perfil
-
-const show = (id, text, ok = false) => {
-  const el = $(id);
-  el.textContent = text;
-  el.className = "msg" + (ok ? " ok" : "");
-};
-const explain = (e) => ERRORS[e.code] || "Erro inesperado. Tente novamente.";
+let busy = false;
+const explain = (error) => ERRORS[error.code] || "Não foi possível concluir. Tente novamente.";
 const goDashboard = () => location.replace("../Dashboard/Dash.html");
 
-onAuthStateChanged(auth, (user) => { if (user && !busy) goDashboard(); });
-
-// Alternar entre login e cadastro
-function toggle(showRegister) {
-  $("login-box").hidden = showRegister;
-  $("register-box").hidden = !showRegister;
+function show(id, text, type = "") {
+  const message = $(id);
+  message.textContent = text;
+  message.className = `form-message${type ? ` ${type}` : ""}`;
 }
-$("toRegister").onclick = () => toggle(true);
-$("toLogin").onclick = () => toggle(false);
 
-// Cadastro
-$("btnRegister").onclick = async () => {
+function setBusy(value, buttonId) {
+  busy = value;
+  $(buttonId).disabled = value;
+}
+
+function toggleRegister(register) {
+  $("login-box").hidden = register;
+  $("register-box").hidden = !register;
+  $("authTitle").textContent = register ? "Crie sua conta" : "Acesse sua conta";
+  $("authSubtitle").textContent = register
+    ? "Comece a organizar suas entradas, saídas e cobranças."
+    : "Entre com seu e-mail e senha para continuar.";
+  show("loginMsg", "");
+  show("msg", "");
+}
+
+async function sendVerification(user) {
+  await sendEmailVerification(user, { url: location.origin });
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (!user || busy) return;
+  if (user.emailVerified) {
+    goDashboard();
+  } else {
+    signOut(auth).catch((error) => {
+      console.error("Falha ao encerrar sessão não verificada:", error);
+      show("loginMsg", "Confirme seu e-mail antes de continuar. Saia e entre novamente após verificar.", "error");
+    });
+  }
+});
+
+if (new URLSearchParams(location.search).has("verify")) {
+  show("loginMsg", "Confirme seu e-mail pelo link enviado para acessar sua conta.", "success");
+}
+
+$("toRegister").addEventListener("click", () => toggleRegister(true));
+$("toLogin").addEventListener("click", () => toggleRegister(false));
+
+$("registerForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (busy) return;
   const name = $("name").value.trim();
   const email = $("email").value.trim();
   const password = $("password").value;
-  if (!name || !email || !password) return show("msg", "Preencha todos os campos.");
+  if (!name || name.length > 80) {
+    show("msg", "Informe seu nome com até 80 caracteres.", "error");
+    return;
+  }
 
-  busy = true;
+  setBusy(true, "btnRegister");
+  show("msg", "Criando sua conta...");
+  let accountCreated = false;
   try {
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    accountCreated = true;
     await updateProfile(user, { displayName: name });
-    await setDoc(doc(db, "users", user.uid), { name, email, createdAt: serverTimestamp() });
-    goDashboard();
-  } catch (e) {
-    busy = false;
-    show("msg", explain(e));
+    await setDoc(doc(db, "users", user.uid), {
+      name, email, createdAt: serverTimestamp()
+    });
+    await sendVerification(user);
+    await signOut(auth);
+    toggleRegister(false);
+    show("loginMsg", "Conta criada! Enviamos um link de verificação para seu e-mail. Confirme-o antes de entrar.", "success");
+    $("loginEmail").value = email;
+  } catch (error) {
+    console.error("Falha durante o cadastro:", error);
+    if (accountCreated) {
+      try {
+        await signOut(auth);
+      } catch (signOutError) {
+        console.error("Falha ao encerrar sessão após cadastro incompleto:", signOutError);
+      }
+      show("msg", "A conta foi criada, mas não foi possível concluir a configuração ou enviar a verificação. Tente entrar e solicite um novo e-mail.", "error");
+    } else {
+      show("msg", explain(error), "error");
+    }
+  } finally {
+    setBusy(false, "btnRegister");
   }
-};
+});
 
-// Login
-$("btnLogin").onclick = async () => {
+$("loginForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (busy) return;
   const email = $("loginEmail").value.trim();
   const password = $("loginPassword").value;
-  if (!email || !password) return show("loginMsg", "Preencha email e senha.");
+  setBusy(true, "btnLogin");
+  show("loginMsg", "Verificando seus dados...");
   try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (e) {
-    show("loginMsg", explain(e));
-  }
-};
-
-// Recuperar senha por email
-$("btnReset").onclick = async () => {
-  const email = $("loginEmail").value.trim();
-  if (!email) return show("loginMsg", "Digite seu email acima para recuperar a senha.");
-  try {
-    await sendPasswordResetEmail(auth, email);
-    show("loginMsg", "Enviamos um link de recuperação para o seu email.", true);
-  } catch (e) {
-    show("loginMsg", explain(e));
-  }
-};
-
-// Login social
-async function social(name) {
-  busy = true;
-  try {
-    const { user } = await signInWithPopup(auth, providers[name]);
-    await setDoc(doc(db, "users", user.uid),
-      { name: user.displayName || "", email: user.email || "", lastLogin: serverTimestamp() },
-      { merge: true });
+    const { user } = await signInWithEmailAndPassword(auth, email, password);
+    if (!user.emailVerified) {
+      await sendVerification(user);
+      await signOut(auth);
+      show("loginMsg", "Seu e-mail ainda não foi confirmado. Enviamos um novo link de verificação.", "error");
+      return;
+    }
     goDashboard();
-  } catch (e) {
-    busy = false;
-    show("loginMsg", explain(e));
+  } catch (error) {
+    console.error("Falha no login:", error);
+    show("loginMsg", explain(error), "error");
+  } finally {
+    setBusy(false, "btnLogin");
   }
-}
-$("btnGoogle").onclick = () => social("google");
-$("btnGithub").onclick = () => social("github");
-$("btnFacebook").onclick = () => social("facebook");
+});
+
+$("btnReset").addEventListener("click", async () => {
+  const email = $("loginEmail").value.trim();
+  if (!email) {
+    show("loginMsg", "Digite seu e-mail para receber o link de recuperação.", "error");
+    $("loginEmail").focus();
+    return;
+  }
+  $("btnReset").disabled = true;
+  try {
+    await sendPasswordResetEmail(auth, email, { url: location.origin });
+    show("loginMsg", "Se houver uma conta com esse e-mail, você receberá um link para redefinir sua senha.", "success");
+  } catch (error) {
+    console.error("Falha ao solicitar redefinição de senha:", error);
+    show("loginMsg", explain(error), "error");
+  } finally {
+    $("btnReset").disabled = false;
+  }
+});
+
+$("btnResendVerification").addEventListener("click", async () => {
+  if (busy) return;
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+  if (!email || !password) {
+    show("loginMsg", "Informe seu e-mail e senha para reenviar o link de verificação.", "error");
+    return;
+  }
+  setBusy(true, "btnResendVerification");
+  try {
+    const { user } = await signInWithEmailAndPassword(auth, email, password);
+    if (user.emailVerified) {
+      goDashboard();
+      return;
+    }
+    await sendVerification(user);
+    await signOut(auth);
+    show("loginMsg", "Enviamos um novo link de verificação. Confira sua caixa de entrada e o spam.", "success");
+  } catch (error) {
+    console.error("Falha ao reenviar verificação:", error);
+    show("loginMsg", explain(error), "error");
+  } finally {
+    setBusy(false, "btnResendVerification");
+  }
+});

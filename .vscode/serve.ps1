@@ -4,7 +4,7 @@ $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add('http://localhost:8080/')
 
-Write-Output 'Starting Controle de Gastos at http://localhost:8080/'
+Write-Output 'Starting VD-Finanças at http://localhost:8080/'
 
 try {
   $listener.Start()

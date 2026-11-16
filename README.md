@@ -1,64 +1,82 @@
-# Controle de Gastos
+# VD-Finanças
 
-Aplicação estática que usa Firebase Authentication para login e Cloud Firestore
-para armazenar os perfis e os gastos de cada usuário. O projeto Firebase já
-referenciado pelo app é `sistemadelogin-01`. O Firebase oferece o plano Spark sem
-custo com cotas limitadas; confirme no Console qual plano está ativo nesse
-projeto e consulte as cotas vigentes antes de usar.
+Sistema de controle financeiro pessoal/comercial para registrar entradas,
+saídas e cobranças. Usa Firebase Authentication para contas, Cloud Firestore
+para os lançamentos e uma Cloud Function para confirmar cobranças pagas por
+e-mail.
 
-## Estrutura do banco
+## Funcionalidades
 
-- `users/{uid}`: nome, email e datas de criação/último acesso do usuário.
-- `expenses/{id}`: `uid`, categoria, descrição, valor e data do gasto.
-- As regras em [`firestore.rules`](./firestore.rules) restringem leitura e
-  exclusão ao dono dos dados e validam os campos gravados.
-- [`firebase.json`](./firebase.json) aponta para as regras; [`.firebaserc`](./.firebaserc)
-  seleciona o projeto já configurado em `FirebaseConfig/Index.js`.
+- Cadastro, login, verificação de e-mail e recuperação de senha.
+- Lançamentos de entrada e saída, com categoria, data e informações adicionais.
+- Cobranças com devedor, e-mail, vencimento, situação e data de pagamento.
+- Indicadores mensais de entradas, saídas, saldo e cobranças em aberto.
+- Busca e filtros por tipo e situação; edição, exclusão e registro de pagamento.
+- Confirmação automática ao devedor quando uma cobrança é marcada como paga;
+  status do envio visível e opção de reenvio em caso de falha.
+- Regras do Firestore que validam os dados, restringem acesso ao proprietário
+  com e-mail verificado e impedem a alteração pelo navegador dos estados de
+  envio de e-mail.
 
-## Ativação do Firebase (uma vez por projeto)
+## Modelo de dados
 
-1. Abra [Firebase Console](https://console.firebase.google.com/) e selecione o
-   projeto `sistemadelogin-01`. Se não tiver acesso a ele, peça ao proprietário para
-   adicionar sua conta; criar outro projeto exige atualizar também a
-   configuração em `FirebaseConfig/Index.js`.
-2. O projeto já possui o banco `(default)` do Firestore, na região `nam5`.
-   Não crie outro banco nem tente alterar sua região; essa configuração é
-   permanente.
-3. Em **Authentication > Método de login**, habilite **E-mail/senha**. Esse
-   provedor ainda não está habilitado no projeto. Habilite Google, GitHub ou
-   Facebook somente se configurar as respectivas credenciais/provedores no Console.
-4. Em **Authentication > Settings > Authorized domains**, confirme que
-   `localhost` está autorizado para desenvolvimento local.
-5. Publique as regras do banco e o site. Isso requer uma conta com permissão
-   no projeto:
+- `users/{uid}`: nome, e-mail e data de criação.
+- `transactions/{id}`: proprietário, tipo, descrição, categoria, valor em
+  centavos, data, vencimento, pagamento, status, dados da outra parte, notas e
+  estado da confirmação por e-mail. Os campos de envio são escritos somente
+  pela Cloud Function.
 
-   ```powershell
-   npm install --global firebase-tools
-   firebase login
-   firebase deploy --only firestore:rules,hosting
-   ```
+## Configuração do Firebase
 
-   Execute os comandos na pasta raiz do projeto. O `.firebaserc` seleciona
-   `sistemadelogin-01` automaticamente. A publicação das regras não apaga os dados.
-   Após a publicação, o Firebase Hosting informa os endereços públicos
-   `https://sistemadelogin-01.web.app` e `https://sistemadelogin-01.firebaseapp.com`.
+O projeto referenciado é `sistemadelogin-01`, definido em
+[`FirebaseConfig/Index.js`](./FirebaseConfig/Index.js) e [`.firebaserc`](./.firebaserc).
+Sua conta precisa ter acesso ao projeto no Firebase Console.
 
-## Executar pelo VS Code
+1. Em **Authentication > Sign-in method**, habilite **E-mail/senha**.
+2. Em **Authentication > Settings > Authorized domains**, autorize
+   `localhost` para desenvolvimento e o domínio publicado do Firebase Hosting.
+3. Em **Authentication > Templates**, configure o remetente e os modelos de
+   verificação de e-mail e redefinição de senha.
+4. Configure SMTP para o remetente que enviará confirmações aos devedores. Não
+   coloque usuário, senha ou tokens SMTP no frontend ou em arquivos versionados.
+5. A implantação de Cloud Functions exige o plano Firebase Blaze e faturamento
+   configurado. O provedor SMTP pode ter custos e limites próprios.
 
-Os módulos JavaScript usam imports ES Modules e precisam ser servidos por HTTP;
-não abra o HTML diretamente como `file://`.
+Instale Node.js 22, npm e Firebase CLI. Na raiz do projeto, autentique-se e
+cadastre os dados SMTP como secrets; cada comando solicita o valor
+interativamente:
 
-1. Abra a pasta raiz do projeto no VS Code.
-2. Pressione **F5** e escolha **Run Controle de Gastos**. A tarefa inicia um
-   servidor local com PowerShell e abre `http://localhost:8080/` no Chrome.
-3. Para iniciar o servidor manualmente, execute na raiz do projeto:
+```powershell
+npm install --global firebase-tools
+firebase login
+firebase functions:secrets:set SMTP_HOST
+firebase functions:secrets:set SMTP_PORT
+firebase functions:secrets:set SMTP_USER
+firebase functions:secrets:set SMTP_PASSWORD
+firebase functions:secrets:set SMTP_FROM
+firebase deploy --only firestore:rules,functions,hosting
+```
+
+`SMTP_PORT` deve ser `465` para TLS ou `587` para STARTTLS. Use em `SMTP_FROM`
+um endereço autorizado pelo provedor. A Function `notifyPaidCharge` envia a
+confirmação quando a cobrança passa para paga; `retryPaymentConfirmation`
+permite reenviar com autenticação. Após a publicação, consulte os logs das
+Functions e teste a entrega real com uma cobrança de teste.
+
+## Executar localmente
+
+Os módulos usam ES Modules e precisam ser servidos por HTTP. Não abra os HTML
+diretamente como `file://`.
+
+1. Abra a pasta raiz no VS Code.
+2. Pressione **F5** e escolha **Run VD-Finanças**. A tarefa inicia um servidor
+   local em `http://localhost:8080/`.
+3. Alternativamente, execute:
 
    ```powershell
    powershell -NoProfile -ExecutionPolicy Bypass -File .\.vscode\serve.ps1
    ```
 
-   Em seguida, acesse `http://localhost:8080/`.
-
-Depois de ativar o Firestore e publicar as regras, crie uma conta para verificar
-o fluxo completo. As cotas gratuitas do Spark são limitadas e podem mudar;
-consulte a página de preços do Firebase antes de usar em produção.
+É necessário habilitar E-mail/senha, Firestore, publicar as regras e implantar a
+Cloud Function com os secrets SMTP para testar o fluxo real de pagamentos e
+confirmações.

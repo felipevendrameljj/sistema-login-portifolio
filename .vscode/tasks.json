@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Serve Controle de Gastos",
+      "label": "Serve VD-Finanças",
       "type": "shell",
       "command": "powershell.exe",
       "args": [
@@ -23,7 +23,7 @@
         },
         "background": {
           "activeOnStart": true,
-          "beginsPattern": "^Starting Controle de Gastos at http://localhost:8080/$",
+          "beginsPattern": "^Starting VD-Finanças at http://localhost:8080/$",
           "endsPattern": "^Server ready at http://localhost:8080/$"
         }
       },
